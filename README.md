@@ -1,7 +1,5 @@
-# gestaodeprojetosA3
-Gestão de Projetos - Projeto A3
-
 # Sistema de Gestão de Projetos e Equipes
+Gestão de Projetos - Projeto A3
 
 ## Descrição
 Sistema desenvolvido em Java para gestão de projetos, equipes e tarefas, com interface JavaFX e banco de dados MySQL.
@@ -31,3 +29,9 @@ Sistema desenvolvido em Java para gestão de projetos, equipes e tarefas, com in
 1. Clone o repositório:
 ```bash
 git clone [https://github.com/SEU_USUARIO/gestao-projetos.git](https://github.com/grazielewest/gestaodeprojetosA3/)
+
+## Licença
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## Disclaimer
+Este software foi desenvolvido para fins acadêmicos. Não há garantia de funcionamento em ambientes de produção.
