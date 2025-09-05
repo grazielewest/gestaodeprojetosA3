@@ -34,6 +34,6 @@ Este software foi desenvolvido para fins acadêmicos. Não há garantia de funci
 ## Como Executar
 1. Clone o repositório:
 ```bash
-git clone [https://github.com/grazielewest/gestaodeprojetosA3/](https://github.com/grazielewest/gestaodeprojetosA3/)
+git clone https://github.com/grazielewest/gestaodeprojetosA3/
 
 
