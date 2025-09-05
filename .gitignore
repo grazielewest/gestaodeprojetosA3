@@ -1,3 +1,169 @@
+# Arquivo .gitignore para Projeto Java - Gestão de Projetos
+# Criado para projeto universitário com Java, JavaFX e MySQL
+
+### Arquivos compilados do Java ###
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+### Diretórios de build ###
+/target/
+/build/
+/out/
+/bin/
+/dist/
+
+### Arquivos de IDEs ###
+# Eclipse
+.settings/
+.classpath
+.project
+.metadata/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+*.ids
+*.orig
+
+# NetBeans
+nbproject/
+private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### Logs ###
+*.log
+logs/
+log/
+*.log.*
+*.log.gz
+*.log.zip
+
+### Banco de Dados ###
+# Arquivos de banco local (não versionar dados)
+*.db
+*.sqlite
+*.h2.db
+/database/backup/
+/database/*.backup
+/database/*.sqlite
+
+# Mas mantenha os scripts SQL
+!database/script.sql
+!database/schema.sql
+!database/migrations/
+
+### Arquivos sensíveis ###
+# Configurações com credenciais
+*.properties
+*.config
+*.conf
+!src/main/resources/application.example.properties
+
+# Chaves e certificados
+*.keystore
+*.truststore
+*.jks
+*.p12
+*.pfx
+*.cer
+*.crt
+*.key
+
+### Arquivos de mídia temporários ###
+*.thumb
+Thumbs.db
+
+### Docker ###
+# Arquivos do Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+### Sistema operacional ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+[Tt]humbs.db
+
+### Testes ###
+# Relatórios de testes
+/test-reports/
+/test-results/
+/coverage-reports/
+
+### Arquivos temporários ###
+*.tmp
+*.temp
+*.cache
+*.~lock.*
+
+### Maven ###
+# Arquivos do Maven 
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### JavaFX ###
+# Cache do JavaFX
+/.cache/
+
+### Documentação gerada ###
+/javadoc/
+/docs/generated/
+
+### Diretórios de deploy ###
+/deploy/
+/server/
+
+# MAS MANTENHA ESTES ARQUIVOS IMPORTANTES
+!pom.xml
+!README.md
+!LICENSE
+!*.sql
+!src/main/resources/**/*.fxml
+!src/main/resources/**/*.css
+!src/main/resources/**/*.png
+!src/main/resources/**/*.jpg
+!src/main/resources/**/*.properties.example
+
+# Exceções específicas do projeto
+!database/init.sql
+!src/main/resources/config/application-template.properties
+!src/main/resources/log4j2.xml.example
+
 # Compiled class file
 *.class
 
