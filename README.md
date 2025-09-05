@@ -25,13 +25,15 @@ Sistema desenvolvido em Java para gestão de projetos, equipes e tarefas, com in
 - [x] Relatórios e dashboards
 - [x] Autenticação e controle de acesso
 
-## Como Executar
-1. Clone o repositório:
-```bash
-git clone [https://github.com/SEU_USUARIO/gestao-projetos.git](https://github.com/grazielewest/gestaodeprojetosA3/)
-
 ## Licença
 Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ## Disclaimer
 Este software foi desenvolvido para fins acadêmicos. Não há garantia de funcionamento em ambientes de produção.
+
+## Como Executar
+1. Clone o repositório:
+```bash
+git clone [https://github.com/grazielewest/gestaodeprojetosA3/](https://github.com/grazielewest/gestaodeprojetosA3/)
+
+
