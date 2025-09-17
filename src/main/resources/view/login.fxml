@@ -2,22 +2,31 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/11.0.1"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="Controller.LoginController">
+<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
+    <VBox alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+        <Label text="Sistema de Gestão de Projetos" style="-fx-font-size: 24px; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="24.0"/>
+            </font>
+        </Label>
 
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-    </padding>
 
-    <Label text="Sistema de Gestão de Projetos" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-    <Label text="Tela de Login - Em Desenvolvimento" style="-fx-font-size: 16px;"/>
+        <VBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10;">
+            <Label text="Login" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
 
-    <TextField fx:id="usernameField" promptText="Usuário"/>
-    <PasswordField fx:id="passwordField" promptText="Senha"/>
+            <Label text="Usuário:"/>
+            <TextField fx:id="usernameField" promptText="Digite seu usuário" style="-fx-pref-width: 300px;"/>
 
-    <Button fx:id="loginButton" text="Entrar" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+            <Label text="Senha:"/>
+            <PasswordField fx:id="passwordField" promptText="Digite sua senha" style="-fx-pref-width: 300px;"/>
 
-</VBox>
+            <Button fx:id="loginButton" text="Entrar" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-pref-width: 300px; -fx-font-weight: bold;" onAction="#handleLogin"/>
+        </VBox>
+    </VBox>
+</AnchorPane>
