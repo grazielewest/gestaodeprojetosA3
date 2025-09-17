@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.ProjetoFormController">
+    <VBox spacing="15" style="-fx-padding: 20;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Label text="Cadastro de Projeto" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" minWidth="100"/>
+                <ColumnConstraints halignment="LEFT" minWidth="300"/>
+            </columnConstraints>
+
+            <rowConstraints>
+                <RowConstraints minHeight="35"/>
+                <RowConstraints minHeight="35"/>
+                <RowConstraints minHeight="35"/>
+                <RowConstraints minHeight="35"/>
+                <RowConstraints minHeight="35"/>
+                <RowConstraints minHeight="35"/>
+                <RowConstraints minHeight="35"/>
+            </rowConstraints>
+
+            <Label text="Nome do Projeto:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtNome" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <Label text="Descrição:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextArea fx:id="txtDescricao" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="3"/>
+
+            <Label text="Data Início:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="dpDataInicio" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <Label text="Data Fim:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="dpDataFim" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <Label text="Status:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cbStatus" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <Label text="Responsável:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cbResponsavel" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        </GridPane>
+
+        <HBox spacing="10" style="-fx-padding: 20 0 0 0;">
+            <Button text="Salvar" style="-fx-background-color: #28a745; -fx-text-fill: white;" onAction="#handleSalvar"/>
+            <Button text="Cancelar" style="-fx-background-color: #6c757d; -fx-text-fill: white;" onAction="#handleCancelar"/>
+        </HBox>
+    </VBox>
+</AnchorPane>
