@@ -13,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.List;
 import java.util.Optional;
+import javafx.scene.control.TableCell;
 
 public class DashboardController {
 
@@ -47,9 +48,31 @@ public class DashboardController {
     private void configurarTabela() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        colDataInicio.setCellValueFactory(new PropertyValueFactory<>("dataInicio"));
-        colDataFim.setCellValueFactory(new PropertyValueFactory<>("dataFim"));
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("statusDisplay"));
+        colDataInicio.setCellValueFactory(new PropertyValueFactory<>("dataInicioFormatada"));
+        colDataFim.setCellValueFactory(new PropertyValueFactory<>("dataFimFormatada"));
+
+        // Adicione esta linha para formatação personalizada
+        colStatus.setCellFactory(column -> new TableCell<Projeto, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    Projeto projeto = getTableView().getItems().get(getIndex());
+                    if (projeto.estaAtrasado()) {
+                        setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+                    } else if ("Concluído".equals(projeto.getStatus())) {
+                        setStyle("-fx-text-fill: green;");
+                    } else {
+                        setStyle("");
+                    }
+                }
+            }
+        });
 
         // Permitir seleção de apenas uma linha
         tabelaProjetos.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
