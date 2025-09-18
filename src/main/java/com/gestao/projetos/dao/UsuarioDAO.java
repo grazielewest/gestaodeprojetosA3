@@ -15,7 +15,7 @@ public class UsuarioDAO {
 
     // CREATE - Salvar novo usuário
     public boolean salvar(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (nome, cpf, email, cargo, login, senha, perfil, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO usuarios (username, password, nome, email) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -237,7 +237,7 @@ public class UsuarioDAO {
 
     // Autenticar usuário (já existente)
     public Usuario autenticar(String login, String senha) {
-        String sql = "SELECT * FROM usuarios WHERE login = ? AND password = ? AND ativo = true";
+        String sql = "SELECT * FROM usuarios WHERE username = ? AND senha = ? AND ativo = true";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -266,7 +266,7 @@ public class UsuarioDAO {
         usuario.setEmail(rs.getString("email"));
         usuario.setCargo(rs.getString("cargo"));
         usuario.setLogin(rs.getString("login"));
-        usuario.setSenha(rs.getString("password")); // Note: mudou para "password"
+        usuario.setSenha(rs.getString("senha"));
         usuario.setPerfil(Perfil.valueOf(rs.getString("perfil")));
         usuario.setAtivo(rs.getBoolean("ativo"));
         return usuario;
