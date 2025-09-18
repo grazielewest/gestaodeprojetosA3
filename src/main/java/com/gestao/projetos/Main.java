@@ -1,6 +1,6 @@
 package com.gestao.projetos;
 
-import com.gestao.projetos.database.DatabaseConnection;
+import database.DatabaseConnection;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
