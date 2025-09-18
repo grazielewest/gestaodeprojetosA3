@@ -1,4 +1,4 @@
-package com.gestao.projetos.database;
+package database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -42,7 +42,7 @@ public class DatabaseConnection {
         }
     }
 
-    // Método adicional para testar conexão
+    // Metodo adicional para testar conexão
     public static boolean testarConexao() {
         try (Connection conn = getConnection()) {
             return true;
