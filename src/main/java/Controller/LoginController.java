@@ -1,6 +1,6 @@
 package Controller;
 
-import com.gestao.projetos.database.DatabaseConnection;
+import database.DatabaseConnection;
 import com.gestao.projetos.dao.UsuarioDAO;
 import com.gestao.projetos.model.entity.Usuario;
 import javafx.fxml.FXML;
