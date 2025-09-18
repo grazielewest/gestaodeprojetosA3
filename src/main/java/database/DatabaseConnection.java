@@ -10,8 +10,8 @@ public class DatabaseConnection {
     private static final Logger logger = Logger.getLogger(DatabaseConnection.class.getName());
 
     private static final String URL = "jdbc:mysql://localhost:3306/gestao_projetos";
-    private static final String USER = "seu_usuario";
-    private static final String PASSWORD = "sua_senha";
+    private static final String USER = "root";
+    private static final String PASSWORD = "root";
 
     public static Connection getConnection() throws SQLException {
         try {
