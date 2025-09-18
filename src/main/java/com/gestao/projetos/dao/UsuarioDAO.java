@@ -1,6 +1,6 @@
 package com.gestao.projetos.dao;
 
-import com.gestao.projetos.database.DatabaseConnection;
+import database.DatabaseConnection;
 import com.gestao.projetos.model.entity.Usuario;
 import com.gestao.projetos.model.entity.Usuario.Perfil;
 
