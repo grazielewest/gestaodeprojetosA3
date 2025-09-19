@@ -36,7 +36,8 @@ public class LoginController {
     @FXML
     private void initialize() {
         // Configuração inicial se necessário
-        loginButton.setOnAction(event -> handleLogin());
+        // REMOVA a linha abaixo se estiver causando problemas
+        // loginButton.setOnAction(event -> handleLogin());
     }
 
     @FXML
@@ -55,7 +56,7 @@ public class LoginController {
             if (usuario != null) {
                 showAlert("Sucesso", "Login realizado com sucesso!");
                 logger.log(Level.INFO, "Usuário " + usuario.getNome() + " logou com sucesso");
-                abrirDashboard(); // Abre o dashboard após login bem-sucedido
+                abrirDashboard();
             } else {
                 showAlert("Erro", "Usuário ou senha inválidos!");
                 logger.log(Level.WARNING, "Tentativa de login falhou para usuário: " + username);
@@ -95,8 +96,8 @@ public class LoginController {
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
 
                 stmt.setString(1, username);
-                stmt.setString(2, password); // ⚠️ Em produção, deve ser criptografada!
-                stmt.setString(3, username); // Usa o username como nome
+                stmt.setString(2, password);
+                stmt.setString(3, username);
                 stmt.setString(4, username + "@exemplo.com");
 
                 int result = stmt.executeUpdate();
@@ -133,7 +134,7 @@ public class LoginController {
             stage.show();
 
             // Fecha a tela de login
-            Stage loginStage = (Stage) loginButton.getScene().getWindow();
+            Stage loginStage = (Stage) usernameField.getScene().getWindow();
             loginStage.close();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Erro ao abrir dashboard", e);
