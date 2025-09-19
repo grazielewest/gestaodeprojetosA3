@@ -16,6 +16,9 @@ import javafx.stage.Stage;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class LoginController {
     private static final Logger logger = Logger.getLogger(LoginController.class.getName());
@@ -36,7 +39,7 @@ public class LoginController {
         loginButton.setOnAction(event -> handleLogin());
     }
 
-    @FXML // ← ANOTAÇÃO
+    @FXML
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
@@ -60,6 +63,62 @@ public class LoginController {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Erro ao autenticar usuário: " + e.getMessage(), e);
             showAlert("Erro", "Erro de conexão com o banco de dados.");
+        }
+    }
+
+    @FXML
+    private void handleCriarUsuarioRapido() {
+        String username = usernameField.getText().trim();
+        String password = passwordField.getText().trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            showAlert("Erro", "Digite um usuário e senha para criar sua conta.");
+            return;
+        }
+
+        if (password.length() < 3) {
+            showAlert("Erro", "A senha deve ter pelo menos 3 caracteres.");
+            return;
+        }
+
+        try {
+            // Verificar se usuário já existe
+            if (usuarioDAO.buscarPorLogin(username) != null) {
+                showAlert("Erro", "Usuário já existe! Escolha outro nome.");
+                return;
+            }
+
+            // Criar novo usuário
+            String sql = "INSERT INTO usuarios (login, password, nome, email) VALUES (?, ?, ?, ?)";
+
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, username);
+                stmt.setString(2, password); // ⚠️ Em produção, deve ser criptografada!
+                stmt.setString(3, username); // Usa o username como nome
+                stmt.setString(4, username + "@exemplo.com");
+
+                int result = stmt.executeUpdate();
+
+                if (result > 0) {
+                    showAlert("Sucesso", "Conta criada com sucesso!\n\nUsuário: " + username + "\nSenha: " + password + "\n\nAgora faça login.");
+                    logger.log(Level.INFO, "Novo usuário criado: " + username);
+
+                    // Limpa os campos
+                    usernameField.clear();
+                    passwordField.clear();
+                } else {
+                    showAlert("Erro", "Não foi possível criar a conta.");
+                }
+            }
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Erro ao criar usuário", e);
+            showAlert("Erro", "Erro técnico ao criar conta: " + e.getMessage());
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Erro inesperado ao criar usuário", e);
+            showAlert("Erro", "Erro inesperado: " + e.getMessage());
         }
     }
 

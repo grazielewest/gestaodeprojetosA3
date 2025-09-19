@@ -5,28 +5,25 @@
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
     <VBox alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-        </padding>
-        <Label text="Sistema de Gestão de Projetos" style="-fx-font-size: 24px; -fx-font-weight: bold;">
-            <font>
-                <Font name="System Bold" size="24.0"/>
-            </font>
-        </Label>
+        <Text text="Sistema de Gestão de Projetos" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-
-        <VBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10;">
+        <VBox alignment="CENTER" spacing="10.0" style="-fx-padding: 20; -fx-background-color: #f5f5f5; -fx-border-radius: 5; -fx-background-radius: 5;">
             <Label text="Login" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
 
-            <Label text="Usuário:"/>
-            <TextField fx:id="usernameField" promptText="Digite seu usuário" style="-fx-pref-width: 300px;"/>
+            <TextField fx:id="usernameField" promptText="Usuário" style="-fx-pref-width: 200px;"/>
+            <PasswordField fx:id="passwordField" promptText="Senha" style="-fx-pref-width: 200px;"/>
 
-            <Label text="Senha:"/>
-            <PasswordField fx:id="passwordField" promptText="Digite sua senha" style="-fx-pref-width: 300px;"/>
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Entrar" onAction="#handleLogin" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-pref-width: 100px;"/>
+                <Button text="Criar Conta" onAction="#handleCriarUsuarioRapido" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-pref-width: 100px;"/>
+            </HBox>
 
-            <Button fx:id="loginButton" text="Entrar" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-pref-width: 300px; -fx-font-weight: bold;" onAction="#handleLogin"/>
+            <Label fx:id="errorLabel" style="-fx-text-fill: red; -fx-visible: false;"/>
         </VBox>
+
+        <Label text="Use: admin / 123" style="-fx-text-fill: #666;"/>
+        <Label text="Ou crie uma nova conta" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
     </VBox>
 </AnchorPane>
