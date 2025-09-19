@@ -84,7 +84,7 @@ public class LoginController {
 
         try {
             // Verificar se usuário já existe
-            if (usuarioDAO.buscarPorLogin(username) != null) {
+            if (usuarioDAO.buscarPorUsername(username) != null) {
                 showAlert("Erro", "Usuário já existe! Escolha outro nome.");
                 return;
             }
