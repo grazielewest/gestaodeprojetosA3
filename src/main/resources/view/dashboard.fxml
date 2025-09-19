@@ -3,8 +3,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.DashboardController">
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.DashboardController">
     <top>
         <MenuBar>
             <Menu text="Arquivo">
@@ -15,7 +16,7 @@
                 <MenuItem text="Novo Projeto" onAction="#handleNovoProjeto"/>
             </Menu>
             <Menu text="Relatórios">
-                <MenuItem text="Relatório de Projetos"/>
+                <MenuItem text="Relatório de Projetos" onAction="#handleRelatorioProjetos"/>
                 <MenuItem text="Relatório de Tarefas"/>
             </Menu>
             <Menu text="Ajuda">
@@ -53,17 +54,18 @@
                 <VBox spacing="10" style="-fx-padding: 20;">
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Button text="Novo Projeto" style="-fx-background-color: #28a745; -fx-text-fill: white;" onAction="#handleNovoProjeto"/>
-                        <Button text="Editar" style="-fx-background-color: #007bff; -fx-text-fill: white;"/>
-                        <Button text="Excluir" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+                        <Button text="Editar" style="-fx-background-color: #007bff; -fx-text-fill: white;" onAction="#handleEditarProjeto"/>
+                        <Button text="Excluir" style="-fx-background-color: #dc3545; -fx-text-fill: white;" onAction="#handleExcluirProjeto"/>
+                        <Button text="Visualizar" style="-fx-background-color: #6c757d; -fx-text-fill: white;" onAction="#handleVisualizarProjeto"/>
                     </HBox>
 
                     <TableView fx:id="tabelaProjetos" style="-fx-pref-height: 400px;">
                         <columns>
-                            <TableColumn text="ID" prefWidth="50"/>
-                            <TableColumn text="Nome" prefWidth="200"/>
-                            <TableColumn text="Status" prefWidth="100"/>
-                            <TableColumn text="Data Início" prefWidth="100"/>
-                            <TableColumn text="Data Fim" prefWidth="100"/>
+                            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colNome" text="Nome" prefWidth="200"/>
+                            <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                            <TableColumn fx:id="colDataInicio" text="Data Início" prefWidth="100"/>
+                            <TableColumn fx:id="colDataFim" text="Data Fim" prefWidth="100"/>
                         </columns>
                     </TableView>
                 </VBox>
@@ -72,8 +74,8 @@
     </center>
 
     <bottom>
-        <StatusBar>
-            <Label text="Usuário: admin | Sistema: Gestão de Projetos v1.0"/>
-        </StatusBar>
+        <!-- StatusBar substituído por Label -->
+        <Label text="Usuário: admin | Sistema: Gestão de Projetos v1.0 | Conectado"
+               style="-fx-background-color: #e0e0e0; -fx-padding: 10px; -fx-border-color: #ccc; -fx-border-width: 1px 0 0 0;"/>
     </bottom>
 </BorderPane>
