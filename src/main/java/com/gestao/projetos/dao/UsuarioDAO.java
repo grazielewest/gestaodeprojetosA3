@@ -13,15 +13,19 @@ public class UsuarioDAO {
     private static final Logger logger = Logger.getLogger(UsuarioDAO.class.getName());
 
     public boolean salvar(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (username, password, nome, email) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO usuarios (username, password, nome, email, cpf, cargo, perfil, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setString(1, usuario.getLogin()); // CORRIGIDO
+            stmt.setString(1, usuario.getLogin());
             stmt.setString(2, usuario.getSenha());
             stmt.setString(3, usuario.getNome());
             stmt.setString(4, usuario.getEmail());
+            stmt.setString(5, usuario.getCpf());
+            stmt.setString(6, usuario.getCargo());
+            stmt.setString(7, usuario.getPerfil() != null ? usuario.getPerfil().name() : null);
+            stmt.setBoolean(8, usuario.isAtivo());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -123,10 +127,24 @@ public class UsuarioDAO {
     private Usuario criarUsuarioFromResultSet(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
         usuario.setId(rs.getInt("id"));
-        usuario.setLogin(rs.getString("username")); // CORRIGIDO
+        usuario.setLogin(rs.getString("username"));
         usuario.setSenha(rs.getString("password"));
         usuario.setNome(rs.getString("nome"));
         usuario.setEmail(rs.getString("email"));
+        usuario.setCpf(rs.getString("cpf"));
+        usuario.setCargo(rs.getString("cargo"));
+
+        // Tratamento seguro para perfil
+        String perfilStr = rs.getString("perfil");
+        if (perfilStr != null) {
+            try {
+                usuario.setPerfil(Usuario.Perfil.valueOf(perfilStr));
+            } catch (IllegalArgumentException e) {
+                usuario.setPerfil(Usuario.Perfil.COLABORADOR); // Valor padrão
+            }
+        }
+
+        usuario.setAtivo(rs.getBoolean("ativo"));
         return usuario;
     }
 }
