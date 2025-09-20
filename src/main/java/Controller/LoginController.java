@@ -85,41 +85,43 @@ public class LoginController {
         try {
             // Verificar se usuário já existe
             if (usuarioDAO.buscarPorUsername(username) != null) {
-                showAlert("Erro", "Usuário já existe! Escolha outro nome.");
+                showAlert("Erro", "Usuário '" + username + "' já existe! Escolha outro nome.");
                 return;
             }
 
-            // Criar novo usuário
-            String sql = "INSERT INTO usuarios (login, password, nome, email) VALUES (?, ?, ?, ?)";
+            // Criar novo usuário - USE username EM VEZ DE login!
+            String sql = "INSERT INTO usuarios (username, password, nome, email) VALUES (?, ?, ?, ?)";
 
             try (Connection conn = DatabaseConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                stmt.setString(1, username);
-                stmt.setString(2, password);
-                stmt.setString(3, username);
-                stmt.setString(4, username + "@exemplo.com");
+                stmt.setString(1, username);  // username
+                stmt.setString(2, password);  // password
+                stmt.setString(3, username);  // nome (usa username como nome)
+                stmt.setString(4, username + "@sistema.com");  // email
 
                 int result = stmt.executeUpdate();
 
                 if (result > 0) {
-                    showAlert("Sucesso", "Conta criada com sucesso!\n\nUsuário: " + username + "\nSenha: " + password + "\n\nAgora faça login.");
+                    showAlert("Sucesso", "✅ Conta criada com sucesso!\n\nUsuário: " + username + "\nSenha: " + password + "\n\nAgora faça login.");
                     logger.log(Level.INFO, "Novo usuário criado: " + username);
 
                     // Limpa os campos
                     usernameField.clear();
                     passwordField.clear();
                 } else {
-                    showAlert("Erro", "Não foi possível criar a conta.");
+                    showAlert("Erro", "❌ Não foi possível criar a conta.");
                 }
             }
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao criar usuário", e);
-            showAlert("Erro", "Erro técnico ao criar conta: " + e.getMessage());
+            showAlert("Erro", "❌ Erro técnico ao criar conta: " + e.getMessage());
+            e.printStackTrace(); // Mostra detalhes do erro
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Erro inesperado ao criar usuário", e);
-            showAlert("Erro", "Erro inesperado: " + e.getMessage());
+            showAlert("Erro", "❌ Erro inesperado: " + e.getMessage());
+            e.printStackTrace(); // Mostra detalhes do erro
         }
     }
 
