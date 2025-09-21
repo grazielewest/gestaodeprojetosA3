@@ -106,8 +106,8 @@ public class DashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/projeto-form.fxml"));
             Parent root = loader.load();
 
-            ProjetoFormController controller = loader.getController();
-            controller.setDashboardController(this);
+            ProjetoFormController Controller = loader.getController();
+            Controller.setDashboardController(this);
 
             Stage stage = new Stage();
             stage.setTitle("Novo Projeto");

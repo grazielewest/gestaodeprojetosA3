@@ -2,50 +2,44 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.ProjetoFormController">
-    <VBox spacing="15" style="-fx-padding: 20;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <Label text="Cadastro de Projeto" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controller.ProjetoFormController"
+            style="-fx-padding: 20;">
+
+    <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+        <Text text="Formulário de Projeto" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
         <GridPane hgap="10" vgap="10">
             <columnConstraints>
-                <ColumnConstraints halignment="RIGHT" minWidth="100"/>
-                <ColumnConstraints halignment="LEFT" minWidth="300"/>
+                <ColumnConstraints prefWidth="100"/>
+                <ColumnConstraints prefWidth="300"/>
             </columnConstraints>
 
-            <rowConstraints>
-                <RowConstraints minHeight="35"/>
-                <RowConstraints minHeight="35"/>
-                <RowConstraints minHeight="35"/>
-                <RowConstraints minHeight="35"/>
-                <RowConstraints minHeight="35"/>
-                <RowConstraints minHeight="35"/>
-                <RowConstraints minHeight="35"/>
-            </rowConstraints>
-
-            <Label text="Nome do Projeto:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtNome" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <Label text="Nome:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="nomeField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
             <Label text="Descrição:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <TextArea fx:id="txtDescricao" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="3"/>
+            <TextArea fx:id="descricaoField" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="3"/>
 
-            <Label text="Data Início:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="dpDataInicio" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="statusComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-            <Label text="Data Fim:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="dpDataFim" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <Label text="Data Início:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="dataInicioPicker" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-            <Label text="Status:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbStatus" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            <Label text="Data Fim:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="dataFimPicker" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-            <Label text="Responsável:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbResponsavel" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <Label text="Orçamento:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <TextField fx:id="orcamentoField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
         </GridPane>
 
         <HBox spacing="10" style="-fx-padding: 20 0 0 0;">
-            <Button text="Salvar" style="-fx-background-color: #28a745; -fx-text-fill: white;" onAction="#handleSalvar"/>
-            <Button text="Cancelar" style="-fx-background-color: #6c757d; -fx-text-fill: white;" onAction="#handleCancelar"/>
+            <Button text="Salvar" onAction="#handleSalvar" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-pref-width: 100px;"/>
+            <Button text="Cancelar" onAction="#handleCancelar" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-pref-width: 100px;"/>
         </HBox>
     </VBox>
 </AnchorPane>

@@ -3,9 +3,7 @@ package Controller;
 import com.gestao.projetos.dao.ProjetoDAO;
 import com.gestao.projetos.dao.UsuarioDAO;
 import com.gestao.projetos.model.entity.Projeto;
-import com.gestao.projetos.model.entity.ProjetoConstantes;
 import com.gestao.projetos.model.entity.Usuario;
-import com.gestao.projetos.util.Validacao;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -15,38 +13,17 @@ import java.util.List;
 
 public class ProjetoFormController {
 
-    @FXML
-    private TextField txtNome;
-
-    @FXML
-    private TextArea txtDescricao;
-
-    @FXML
-    private DatePicker dpDataInicio;
-
-    @FXML
-    private DatePicker dpDataFim;
-
-    @FXML
-    private ComboBox<String> cbStatus;
-
-    @FXML
-    private ComboBox<Usuario> cbResponsavel;
-
-    @FXML
-    private TextField txtOrcamento;
-
-    @FXML
-    private ComboBox<String> cbPrioridade;
-
-    @FXML
-    private Button btnSalvar;
-
-    @FXML
-    private Button btnCancelar;
-
-    @FXML
-    private Label lblTitulo;
+    @FXML private TextField txtNome;
+    @FXML private TextArea txtDescricao;
+    @FXML private DatePicker dpDataInicio;
+    @FXML private DatePicker dpDataFim;
+    @FXML private ComboBox<String> cbStatus;
+    @FXML private ComboBox<Usuario> cbResponsavel;
+    @FXML private TextField txtOrcamento;
+    @FXML private ComboBox<String> cbPrioridade;
+    @FXML private Button btnSalvar;
+    @FXML private Button btnCancelar;
+    @FXML private Label lblTitulo;
 
     private Projeto projeto;
     private ProjetoDAO projetoDAO;
@@ -64,11 +41,11 @@ public class ProjetoFormController {
 
     private void configurarComponentes() {
         // Configurar ComboBox de Status
-        cbStatus.getItems().addAll(ProjetoConstantes.STATUS);
+        cbStatus.getItems().addAll("Planejamento", "Em Andamento", "Concluído", "Cancelado");
         cbStatus.getSelectionModel().selectFirst();
 
         // Configurar ComboBox de Prioridade
-        cbPrioridade.getItems().addAll(ProjetoConstantes.PRIORIDADES);
+        cbPrioridade.getItems().addAll("Baixa", "Média", "Alta");
         cbPrioridade.getSelectionModel().select("Média");
 
         // Configurar DatePickers
@@ -89,10 +66,6 @@ public class ProjetoFormController {
     }
 
     private void adicionarListenersValidacao() {
-        txtNome.textProperty().addListener((observable, oldValue, newValue) -> {
-            Validacao.validarObrigatoriedade(txtNome, "Nome do projeto");
-        });
-
         dpDataInicio.valueProperty().addListener((observable, oldValue, newValue) -> {
             validarDatas();
         });
@@ -131,13 +104,20 @@ public class ProjetoFormController {
         if (projeto != null) {
             txtNome.setText(projeto.getNome());
             txtDescricao.setText(projeto.getDescricao());
+
+            // Já é LocalDate - não precisa converter!
             dpDataInicio.setValue(projeto.getDataInicio());
             dpDataFim.setValue(projeto.getDataFim());
+
             cbStatus.setValue(projeto.getStatus());
-            txtOrcamento.setText(String.valueOf(projeto.getOrcamento()));
+
+            if (projeto.getOrcamento() > 0) {
+                txtOrcamento.setText(String.valueOf(projeto.getOrcamento()));
+            }
+
             cbPrioridade.setValue(projeto.getPrioridade());
 
-            // Selecionar o responsável correto
+            // Selecionar o responsável
             if (projeto.getIdResponsavel() > 0) {
                 for (Usuario usuario : cbResponsavel.getItems()) {
                     if (usuario.getId() == projeto.getIdResponsavel()) {
@@ -153,20 +133,14 @@ public class ProjetoFormController {
     private void handleSalvar() {
         if (validarFormulario()) {
             try {
-                Projeto projetoSalvar;
-
-                if (modoEdicao) {
-                    projetoSalvar = projeto;
-                    atualizarProjetoFromForm(projetoSalvar);
-                } else {
-                    projetoSalvar = criarProjetoFromForm();
-                }
+                Projeto projetoSalvar = modoEdicao ? projeto : new Projeto();
+                atualizarProjetoFromForm(projetoSalvar);
 
                 boolean sucesso;
                 if (modoEdicao) {
                     sucesso = projetoDAO.atualizar(projetoSalvar);
                 } else {
-                    sucesso = projetoDAO.inserir(projetoSalvar) > 0;
+                    sucesso = projetoDAO.salvar(projetoSalvar);
                 }
 
                 if (sucesso) {
@@ -184,6 +158,7 @@ public class ProjetoFormController {
 
             } catch (Exception e) {
                 mostrarAlerta("Erro", "Erro ao salvar projeto: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
@@ -197,25 +172,34 @@ public class ProjetoFormController {
         boolean valido = true;
 
         // Validar nome
-        if (!Validacao.validarObrigatoriedade(txtNome, "Nome do projeto")) {
+        if (txtNome.getText().trim().isEmpty()) {
+            mostrarErro(txtNome, "Nome do projeto é obrigatório.");
             valido = false;
+        } else {
+            removerErro(txtNome);
         }
 
         // Validar datas
         if (dpDataInicio.getValue() == null) {
             mostrarErro(dpDataInicio, "Data de início é obrigatória.");
             valido = false;
+        } else {
+            removerErro(dpDataInicio);
         }
 
         if (dpDataFim.getValue() == null) {
             mostrarErro(dpDataFim, "Data de fim é obrigatória.");
             valido = false;
+        } else {
+            removerErro(dpDataFim);
         }
 
         if (dpDataInicio.getValue() != null && dpDataFim.getValue() != null) {
             if (dpDataFim.getValue().isBefore(dpDataInicio.getValue())) {
-                mostrarAlerta("Erro", "Data de fim não pode ser anterior à data de início.");
+                mostrarErro(dpDataFim, "Data de fim não pode ser anterior à data de início.");
                 valido = false;
+            } else {
+                removerErro(dpDataFim);
             }
         }
 
@@ -223,6 +207,8 @@ public class ProjetoFormController {
         if (cbResponsavel.getSelectionModel().getSelectedItem() == null) {
             mostrarErro(cbResponsavel, "Selecione um responsável.");
             valido = false;
+        } else {
+            removerErro(cbResponsavel);
         }
 
         // Validar orçamento
@@ -235,6 +221,8 @@ public class ProjetoFormController {
                 if (orcamento < 0) {
                     mostrarErro(txtOrcamento, "Orçamento não pode ser negativo.");
                     valido = false;
+                } else {
+                    removerErro(txtOrcamento);
                 }
             } catch (NumberFormatException e) {
                 mostrarErro(txtOrcamento, "Orçamento deve ser um número válido.");
@@ -255,37 +243,45 @@ public class ProjetoFormController {
         }
     }
 
-    private Projeto criarProjetoFromForm() {
-        Projeto novoProjeto = new Projeto();
-        atualizarProjetoFromForm(novoProjeto);
-        return novoProjeto;
-    }
-
     private void atualizarProjetoFromForm(Projeto projeto) {
         projeto.setNome(txtNome.getText().trim());
         projeto.setDescricao(txtDescricao.getText().trim());
+
+        // Já é LocalDate - não precisa converter!
         projeto.setDataInicio(dpDataInicio.getValue());
         projeto.setDataFim(dpDataFim.getValue());
+
         projeto.setStatus(cbStatus.getValue());
-        projeto.setIdResponsavel(cbResponsavel.getSelectionModel().getSelectedItem().getId());
-        projeto.setOrcamento(Double.parseDouble(txtOrcamento.getText()));
+
+        Usuario responsavel = cbResponsavel.getSelectionModel().getSelectedItem();
+        if (responsavel != null) {
+            projeto.setIdResponsavel(responsavel.getId());
+        }
+
+        if (!txtOrcamento.getText().isEmpty()) {
+            projeto.setOrcamento(Double.parseDouble(txtOrcamento.getText()));
+        }
+
         projeto.setPrioridade(cbPrioridade.getValue());
+
+        // Atualizar data de atualização
+        projeto.setDataAtualizacao(LocalDate.now());
     }
 
     private void mostrarErro(Control campo, String mensagem) {
         campo.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
         if (campo.getTooltip() == null) {
-            Tooltip tooltip = new Tooltip();
+            Tooltip tooltip = new Tooltip(mensagem);
             campo.setTooltip(tooltip);
+        } else {
+            campo.getTooltip().setText(mensagem);
         }
-        campo.getTooltip().setText(mensagem);
-        campo.getTooltip().show(campo.getScene().getWindow());
     }
 
     private void removerErro(Control campo) {
         campo.setStyle("");
         if (campo.getTooltip() != null) {
-            campo.getTooltip().hide();
+            campo.getTooltip().setText("");
         }
     }
 
@@ -300,14 +296,5 @@ public class ProjetoFormController {
     private void fecharJanela() {
         Stage stage = (Stage) btnSalvar.getScene().getWindow();
         stage.close();
-    }
-
-    // Métodos para facilitar testes
-    public Projeto getProjeto() {
-        return projeto;
-    }
-
-    public boolean isModoEdicao() {
-        return modoEdicao;
     }
 }
