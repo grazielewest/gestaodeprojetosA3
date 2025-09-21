@@ -18,23 +18,31 @@
                 <ColumnConstraints prefWidth="300"/>
             </columnConstraints>
 
+            <!-- ✅ CORRIGIDO: Alterado para corresponder ao controller -->
             <Label text="Nome:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="nomeField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <TextField fx:id="txtNome" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
             <Label text="Descrição:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <TextArea fx:id="descricaoField" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="3"/>
+            <TextArea fx:id="txtDescricao" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="3"/>
 
             <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="statusComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <ComboBox fx:id="cbStatus" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
             <Label text="Data Início:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="dataInicioPicker" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <DatePicker fx:id="dpDataInicio" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
             <Label text="Data Fim:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="dataFimPicker" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            <DatePicker fx:id="dpDataFim" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
             <Label text="Orçamento:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <TextField fx:id="orcamentoField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <TextField fx:id="txtOrcamento" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            <!-- ✅ ADICIONE estes campos que faltam -->
+            <Label text="Responsável:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cbResponsavel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+            <Label text="Prioridade:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cbPrioridade" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
         </GridPane>
 
         <HBox spacing="10" style="-fx-padding: 20 0 0 0;">
