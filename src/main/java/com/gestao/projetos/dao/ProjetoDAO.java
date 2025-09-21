@@ -76,6 +76,29 @@ public class ProjetoDAO {
         return false;
     }
 
+    public boolean excluir(int id) {
+        String sql = "DELETE FROM projetos WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                logger.log(Level.INFO, "Projeto excluído com ID: " + id);
+                return true;
+            } else {
+                logger.log(Level.WARNING, "Nenhum projeto encontrado com ID: " + id);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Erro ao excluir projeto com ID " + id + ": " + e.getMessage(), e);
+            return false;
+        }
+    }
+
     private void configurarPreparedStatement(PreparedStatement stmt, Projeto projeto) throws SQLException {
         stmt.setString(1, projeto.getNome());
         stmt.setString(2, projeto.getDescricao());
