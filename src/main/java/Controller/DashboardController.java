@@ -80,14 +80,19 @@ public class DashboardController {
 
     private void carregarProjetos() {
         try {
+            System.out.println("🔄 Carregando projetos para a tabela...");
             List<Projeto> projetos = projetoDAO.listarTodos();
             projetosList = FXCollections.observableArrayList(projetos);
             tabelaProjetos.setItems(projetosList);
+
+            System.out.println("✅ " + projetos.size() + " projetos carregados na tabela");
+
         } catch (Exception e) {
+            System.out.println("❌ Erro ao carregar projetos: " + e.getMessage());
             showAlert("Erro", "Erro ao carregar projetos: " + e.getMessage());
+            e.printStackTrace();
         }
     }
-
     @FXML
     private void handleSair() {
         System.exit(0);
