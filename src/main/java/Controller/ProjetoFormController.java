@@ -33,6 +33,14 @@ public class ProjetoFormController {
 
     @FXML
     private void initialize() {
+        System.out.println("🔄 Inicializando ProjetoFormController...");
+
+        // Debug: verificar se os componentes foram injetados
+        System.out.println("btnSalvar é null? " + (btnSalvar == null));
+        System.out.println("btnCancelar é null? " + (btnCancelar == null));
+        System.out.println("txtNome é null? " + (txtNome == null));
+        System.out.println("cbStatus é null? " + (cbStatus == null));
+
         projetoDAO = new ProjetoDAO();
         usuarioDAO = new UsuarioDAO();
         configurarComponentes();
