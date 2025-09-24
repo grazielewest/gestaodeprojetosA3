@@ -18,6 +18,35 @@ public class ProjetoDAO {
     private static final String UPDATE_SQL = "UPDATE projetos SET nome = ?, descricao = ?, status = ?, data_inicio = ?, data_fim = ?, orcamento = ?, id_responsavel = ?, prioridade = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM projetos WHERE id = ?";
 
+    // ✅ METODO ADICIONADO: Criar tabela de projetos
+    public void criarTabela() {
+        String sql = "CREATE TABLE IF NOT EXISTS projetos (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nome TEXT NOT NULL, " +
+                "descricao TEXT, " +
+                "data_inicio DATE, " +
+                "data_fim DATE, " +
+                "status TEXT, " +
+                "id_responsavel INTEGER, " +
+                "orcamento REAL, " +
+                "prioridade TEXT, " +
+                "data_criacao DATE DEFAULT CURRENT_DATE, " +
+                "data_atualizacao DATE, " +
+                "FOREIGN KEY (id_responsavel) REFERENCES usuarios(id)" +
+                ")";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.execute(sql);
+            logger.log(Level.INFO, "✅ Tabela de projetos criada/verificada");
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "❌ Erro ao criar tabela de projetos", e);
+        }
+    }
+
+    // Seus métodos existentes continuam daqui...
     public boolean salvar(Projeto projeto) {
         System.out.println("🔄 Tentando salvar projeto: " + projeto.getNome());
 

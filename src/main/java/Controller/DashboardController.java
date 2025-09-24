@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.stage.Modality;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.List;
@@ -93,6 +94,7 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
+
     @FXML
     private void handleSair() {
         System.exit(0);
@@ -111,8 +113,8 @@ public class DashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/projeto-form.fxml"));
             Parent root = loader.load();
 
-            ProjetoFormController Controller = loader.getController();
-            Controller.setDashboardController(this);
+            ProjetoFormController controller = loader.getController();
+            controller.setDashboardController(this);
 
             Stage stage = new Stage();
             stage.setTitle("Novo Projeto");
@@ -124,6 +126,7 @@ public class DashboardController {
 
         } catch (Exception e) {
             showAlert("Erro", "Não foi possível abrir o formulário de projeto: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -154,6 +157,7 @@ public class DashboardController {
 
         } catch (Exception e) {
             showAlert("Erro", "Erro ao abrir formulário de edição: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -198,20 +202,32 @@ public class DashboardController {
         }
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/projeto-detalhes.fxml"));
+            System.out.println("📋 Tentando visualizar projeto: " + projetoSelecionado.getNome());
+
+            // ✅ Use o mesmo arquivo FXML do formulário, mas no modo visualização
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/projeto-form.fxml"));
             Parent root = loader.load();
 
-            // Se tiver um controller para detalhes, configure aqui
-            // ProjetoDetalhesController controller = loader.getController();
-            // controller.carregarProjeto(projetoSelecionado);
+            ProjetoFormController controller = loader.getController();
+            controller.setProjetoParaEdicao(projetoSelecionado);
+            controller.setDashboardController(this);
+
+            // ✅ Configure o modo de visualização (somente leitura)
+            controller.configurarModoVisualizacao();
 
             Stage stage = new Stage();
-            stage.setTitle("Detalhes do Projeto - " + projetoSelecionado.getNome());
+            stage.setTitle("Visualizar Projeto - " + projetoSelecionado.getNome());
             stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tabelaProjetos.getScene().getWindow());
             stage.show();
 
+            System.out.println("✅ Visualização do projeto aberta com sucesso!");
+
         } catch (Exception e) {
+            System.out.println("❌ Erro ao visualizar projeto: " + e.getMessage());
             showAlert("Erro", "Erro ao visualizar projeto: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

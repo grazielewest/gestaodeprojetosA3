@@ -87,14 +87,95 @@ public class ProjetoFormController {
         try {
             // Carregar usuários para o ComboBox de responsáveis
             List<Usuario> usuarios = usuarioDAO.listarTodos();
-            cbResponsavel.getItems().addAll(usuarios);
+
+            // Limpar itens existentes
+            cbResponsavel.getItems().clear();
+
+            // ✅ CORRETO: Adicionar objetos Usuario completos
+            for (Usuario usuario : usuarios) {
+                cbResponsavel.getItems().add(usuario); // ← Adiciona o objeto Usuario, não apenas o nome
+            }
+
+            // ✅ Configurar para mostrar apenas o nome no ComboBox
+            cbResponsavel.setCellFactory(lv -> new ListCell<Usuario>() {
+                @Override
+                protected void updateItem(Usuario usuario, boolean empty) {
+                    super.updateItem(usuario, empty);
+                    if (empty || usuario == null) {
+                        setText(null);
+                    } else {
+                        setText(usuario.getNome()); // ← Mostra apenas o nome
+                    }
+                }
+            });
+
+            // ✅ Configurar o texto do botão do ComboBox
+            cbResponsavel.setButtonCell(new ListCell<Usuario>() {
+                @Override
+                protected void updateItem(Usuario usuario, boolean empty) {
+                    super.updateItem(usuario, empty);
+                    if (empty || usuario == null) {
+                        setText(null);
+                    } else {
+                        setText(usuario.getNome()); // ← Mostra apenas o nome
+                    }
+                }
+            });
 
             if (!usuarios.isEmpty()) {
                 cbResponsavel.getSelectionModel().selectFirst();
             }
+
+            System.out.println("✅ " + usuarios.size() + " usuários carregados no ComboBox");
+
         } catch (Exception e) {
+            System.out.println("❌ Erro ao carregar usuários: " + e.getMessage());
             mostrarAlerta("Erro", "Erro ao carregar usuários: " + e.getMessage());
         }
+    }
+    // ✅ VERSÃO QUE REMOVE INTERAÇÃO MAS MANTÉM VISÍVEL
+    public void configurarModoVisualizacao() {
+        System.out.println("🔒 Configurando modo visualização (sem interação)");
+
+        // Para campos de texto: somente leitura
+        txtNome.setEditable(false);
+        txtDescricao.setEditable(false);
+        txtOrcamento.setEditable(false);
+
+        // Para DatePickers: desabilitar mas manter valor visível
+        dpDataInicio.setDisable(true);
+        dpDataInicio.setMouseTransparent(true); // Ignora cliques do mouse
+        dpDataInicio.setFocusTraversable(false); // Não pode receber foco
+
+        dpDataFim.setDisable(true);
+        dpDataFim.setMouseTransparent(true);
+        dpDataFim.setFocusTraversable(false);
+
+        // Para ComboBoxes: desabilitar interação mas manter aparência
+        cbStatus.setDisable(true);
+        cbStatus.setMouseTransparent(true);
+        cbStatus.setFocusTraversable(false);
+        cbStatus.setOpacity(1.0); // Importante: não deixar esmaecido
+
+        cbResponsavel.setDisable(true);
+        cbResponsavel.setMouseTransparent(true);
+        cbResponsavel.setFocusTraversable(false);
+        cbResponsavel.setOpacity(1.0);
+
+        cbPrioridade.setDisable(true);
+        cbPrioridade.setMouseTransparent(true);
+        cbPrioridade.setFocusTraversable(false);
+        cbPrioridade.setOpacity(1.0);
+
+        // Botões
+        btnSalvar.setVisible(false);
+        btnCancelar.setText("Fechar");
+
+        if (lblTitulo != null) {
+            lblTitulo.setText("📋 " + (projeto != null ? projeto.getNome() : "Visualizar Projeto"));
+        }
+
+        System.out.println("✅ Modo visualização configurado (sem interação)");
     }
 
     public void setProjetoParaEdicao(Projeto projeto) {
@@ -254,13 +335,11 @@ public class ProjetoFormController {
     private void atualizarProjetoFromForm(Projeto projeto) {
         projeto.setNome(txtNome.getText().trim());
         projeto.setDescricao(txtDescricao.getText().trim());
-
-        // Já é LocalDate - não precisa converter!
         projeto.setDataInicio(dpDataInicio.getValue());
         projeto.setDataFim(dpDataFim.getValue());
-
         projeto.setStatus(cbStatus.getValue());
 
+        // ✅ Buscar ID do usuário pelo nome selecionado
         Usuario responsavel = cbResponsavel.getSelectionModel().getSelectedItem();
         if (responsavel != null) {
             projeto.setIdResponsavel(responsavel.getId());
@@ -271,8 +350,6 @@ public class ProjetoFormController {
         }
 
         projeto.setPrioridade(cbPrioridade.getValue());
-
-        // Atualizar data de atualização
         projeto.setDataAtualizacao(LocalDate.now());
     }
 
