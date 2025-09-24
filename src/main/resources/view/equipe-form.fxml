@@ -3,8 +3,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import com.gestao.projetos.model.entity.Usuario?>
-<?import com.gestao.projetos.model.entity.Projeto?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Controller.EquipeFormController"
@@ -53,7 +51,8 @@
                             style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 12px;"/>
                 </HBox>
                 <ListView fx:id="listViewMembros" prefHeight="200"/>
-                <Label text="Total de membros: 0" style="-fx-text-fill: #666;"/>
+                <!-- 🔥 CORREÇÃO: Adicione o fx:id para o label -->
+                <Label fx:id="lblTotalMembros" text="Total de membros: 0" style="-fx-text-fill: #666;"/>
             </VBox>
 
             <!-- Coluna de Projetos -->
@@ -64,7 +63,8 @@
                             style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-size: 12px;"/>
                 </HBox>
                 <ListView fx:id="listViewProjetos" prefHeight="200"/>
-                <Label text="Total de projetos: 0" style="-fx-text-fill: #666;"/>
+                <!-- 🔥 CORREÇÃO: Adicione o fx:id para o label -->
+                <Label fx:id="lblTotalProjetos" text="Total de projetos: 0" style="-fx-text-fill: #666;"/>
             </VBox>
         </HBox>
 
