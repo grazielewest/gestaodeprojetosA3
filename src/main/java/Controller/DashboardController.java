@@ -274,6 +274,41 @@ public class DashboardController {
         carregarProjetos();
     }
 
+    // No DashboardController.java - método corrigido
+    @FXML
+    private void handleGerenciarUsuarios() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/usuario-form.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Gerenciar Usuários");
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            showAlert("Erro", "Não foi possível abrir o formulário de usuários: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleNovoUsuario() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/usuario-form.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Novo Usuário");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+        } catch (Exception e) {
+            showAlert("Erro", "Erro ao abrir formulário de usuário: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
