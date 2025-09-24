@@ -1,5 +1,6 @@
 package com.gestao.projetos;
 
+import com.gestao.projetos.dao.EquipeDAO;
 import com.gestao.projetos.dao.ProjetoDAO;
 import com.gestao.projetos.dao.UsuarioDAO;
 import database.DatabaseConnection;
@@ -63,8 +64,11 @@ public class Main extends Application {
 
             ProjetoDAO projetoDAO = new ProjetoDAO();
             projetoDAO.criarTabela();
+
+            // Inicializar tabelas de equipes
+            EquipeDAO equipeDAO = new EquipeDAO();
+            equipeDAO.criarTabela();
             // Aqui você pode adicionar a inicialização de outras tabelas no futuro
-            // projetoDAO.criarTabela();
             // tarefaDAO.criarTabela();
 
             logger.log(Level.INFO, "✅ Tabelas do sistema inicializadas com sucesso");

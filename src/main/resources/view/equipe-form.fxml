@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controller.EquipeFormController"
+            prefWidth="700" prefHeight="600"
+            style="-fx-padding: 20;">
+
+    <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+        <!-- Título -->
+        <Label fx:id="lblTitulo" text="Nova Equipe"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+        <Separator style="-fx-padding: 5px 0;"/>
+
+        <!-- Formulário básico -->
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints prefWidth="120"/>
+                <ColumnConstraints prefWidth="400"/>
+            </columnConstraints>
+
+            <!-- Nome da Equipe -->
+            <Label text="Nome da Equipe:" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="txtNome" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                       promptText="Digite o nome da equipe"/>
+
+            <!-- Status -->
+            <Label text="Status:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <CheckBox fx:id="chkAtiva" text="Equipe ativa" selected="true"
+                      GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        </GridPane>
+
+        <!-- Descrição -->
+        <Label text="Descrição:" style="-fx-font-weight: bold;"/>
+        <TextArea fx:id="txtDescricao" prefRowCount="3"
+                  promptText="Descreva a equipe, objetivos, etc."/>
+
+        <!-- Área de Membros e Projetos -->
+        <HBox spacing="20" prefHeight="250">
+            <!-- Coluna de Membros -->
+            <VBox spacing="10" prefWidth="320">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="👥 Membros da Equipe" style="-fx-font-weight: bold;"/>
+                    <Button text="+ Adicionar Membros" onAction="#handleAdicionarMembros"
+                            style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 12px;"/>
+                </HBox>
+                <ListView fx:id="listViewMembros" prefHeight="200">
+                    <cellFactory>
+                        <fx:factory>
+                            <ListCell<Usuario>
+                            protected void updateItem(Usuario usuario, boolean empty) {
+                            super.updateItem(usuario, empty);
+                            if (empty || usuario == null) {
+                            setText(null);
+                            } else {
+                            setText(usuario.getNome() + " (" + usuario.getCargo() + ")");
+                            }
+                            }
+                        </ListCell>
+                        </fx:factory>
+                    </cellFactory>
+                </ListView>
+                <Label text="Total de membros: " style="-fx-text-fill: #666;">
+                    <graphic>
+                        <Label text="0" style="-fx-font-weight: bold;">
+                            <text>
+                                <fx:bind listViewMembros.items.size/>
+                            </text>
+                        </Label>
+                    </graphic>
+                </Label>
+            </VBox>
+
+            <!-- Coluna de Projetos -->
+            <VBox spacing="10" prefWidth="320">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="📋 Projetos da Equipe" style="-fx-font-weight: bold;"/>
+                    <Button text="+ Adicionar Projetos" onAction="#handleAdicionarProjetos"
+                            style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-size: 12px;"/>
+                </HBox>
+                <ListView fx:id="listViewProjetos" prefHeight="200">
+                    <cellFactory>
+                        <fx:factory>
+                            <ListCell<Projeto>
+                            protected void updateItem(Projeto projeto, boolean empty) {
+                            super.updateItem(projeto, empty);
+                            if (empty || projeto == null) {
+                            setText(null);
+                            } else {
+                            setText(projeto.getNome() + " - " + projeto.getStatus());
+                            }
+                            }
+                        </ListCell>
+                        </fx:factory>
+                    </cellFactory>
+                </ListView>
+                <Label text="Total de projetos: " style="-fx-text-fill: #666;">
+                    <graphic>
+                        <Label text="0" style="-fx-font-weight: bold;">
+                            <text>
+                                <fx:bind listViewProjetos.items.size/>
+                            </text>
+                        </Label>
+                    </graphic>
+                </Label>
+            </VBox>
+        </HBox>
+
+        <!-- Área de informações -->
+        <VBox spacing="5" style="-fx-background-color: #f8f9fa; -fx-padding: 10; -fx-border-radius: 5;">
+            <Label text="💡 Informações:" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label text="• Uma equipe pode ter múltiplos membros e projetos" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+            <Label text="• Um usuário pode participar de várias equipes" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+            <Label text="• Um projeto pode ter várias equipes associadas" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+        </VBox>
+
+        <!-- Botões -->
+        <HBox spacing="15" style="-fx-padding: 20 0 0 0;" alignment="CENTER_RIGHT">
+            <Button fx:id="btnCancelar" text="Cancelar" onAction="#handleCancelar"
+                    style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 100px;"/>
+            <Button fx:id="btnSalvar" text="Salvar" onAction="#handleSalvar"
+                    style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 100px;"/>
+        </HBox>
+    </VBox>
+</AnchorPane>

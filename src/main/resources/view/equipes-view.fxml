@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controller.EquipesViewController"
+            prefWidth="800" prefHeight="600">
+
+    <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+        <!-- Cabeçalho -->
+        <HBox spacing="15" alignment="CENTER_LEFT">
+            <Label text="👥 Gerenciamento de Equipes" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Button text="➕ Nova Equipe" onAction="#handleNovaEquipe"
+                    style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+
+        <Separator/>
+
+        <!-- Tabela de Equipes -->
+        <TableView fx:id="tabelaEquipes" prefHeight="400">
+            <columns>
+                <TableColumn text="ID" prefWidth="50">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="id"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn text="Nome" prefWidth="200">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="nome"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn text="Membros" prefWidth="100">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="quantidadeMembros"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn text="Projetos" prefWidth="100">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="quantidadeProjetos"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn text="Status" prefWidth="100">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="ativa"/>
+                    </cellValueFactory>
+                    <cellFactory>
+                        <fx:factory>
+                            <TableCell<Equipe, Boolean>
+                            protected void updateItem(Boolean ativa, boolean empty) {
+                            super.updateItem(ativa, empty);
+                            if (empty || ativa == null) {
+                            setText(null);
+                            setStyle("");
+                            } else {
+                            setText(ativa ? "Ativa" : "Inativa");
+                            setStyle(ativa ? "-fx-text-fill: green; -fx-font-weight: bold;" : "-fx-text-fill: red;");
+                            }
+                            }
+                        </TableCell>
+                    </fx:factory>
+                </cellFactory>
+            </TableColumn>
+            <TableColumn text="Ações" prefWidth="150">
+                <cellFactory>
+                    <fx:factory>
+                        <TableCell<Equipe, Void>
+                        private final Button btnEditar = new Button("Editar");
+                        private final Button btnExcluir = new Button("Excluir");
+
+                        {
+                        btnEditar.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 11px;");
+                        btnExcluir.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 11px;");
+
+                        btnEditar.setOnAction(event -> {
+                        Equipe equipe = getTableView().getItems().get(getIndex());
+                        getController().editarEquipe(equipe);
+                        });
+
+                        btnExcluir.setOnAction(event -> {
+                        Equipe equipe = getTableView().getItems().get(getIndex());
+                        getController().excluirEquipe(equipe);
+                        });
+                        }
+
+                        protected void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                        setGraphic(null);
+                        } else {
+                        HBox botoes = new HBox(5, btnEditar, btnExcluir);
+                        setGraphic(botoes);
+                        }
+                        }
+
+                        private EquipesViewController getController() {
+                        return (EquipesViewController) getTableView().getProperties().get("controller");
+                        }
+                    </TableCell>
+                </fx:factory>
+            </cellFactory>
+        </TableColumn>
+    </columns>
+</TableView>
+
+        <!-- Rodapé com estatísticas -->
+<HBox spacing="20" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-radius: 5;">
+<Label text="Total de equipes: ">
+    <graphic>
+        <Label fx:id="lblTotalEquipes" style="-fx-font-weight: bold;"/>
+    </graphic>
+</Label>
+<Label text="Equipes ativas: ">
+    <graphic>
+        <Label fx:id="lblEquipesAtivas" style="-fx-font-weight: bold; -fx-text-fill: green;"/>
+    </graphic>
+</Label>
+<Label text="Total de membros: ">
+    <graphic>
+        <Label fx:id="lblTotalMembros" style="-fx-font-weight: bold;"/>
+    </graphic>
+</Label>
+</HBox>
+        </VBox>
+        </AnchorPane>

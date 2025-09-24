@@ -309,6 +309,42 @@ public class DashboardController {
         }
     }
 
+    // No DashboardController.java - adicione estes métodos:
+
+    @FXML
+    private void handleGerenciarEquipes() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/equipes-view.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Gerenciamento de Equipes");
+            stage.setScene(new Scene(root, 800, 600));
+            stage.show();
+
+        } catch (Exception e) {
+            showAlert("Erro", "Não foi possível abrir o gerenciamento de equipes: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleNovaEquipe() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/equipe-form.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Nova Equipe");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+        } catch (Exception e) {
+            showAlert("Erro", "Erro ao abrir formulário de equipe: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
