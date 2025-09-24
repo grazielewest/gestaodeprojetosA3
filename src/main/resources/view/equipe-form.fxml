@@ -3,6 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import com.gestao.projetos.model.entity.Usuario?>
+<?import com.gestao.projetos.model.entity.Projeto?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Controller.EquipeFormController"
@@ -50,31 +52,8 @@
                     <Button text="+ Adicionar Membros" onAction="#handleAdicionarMembros"
                             style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 12px;"/>
                 </HBox>
-                <ListView fx:id="listViewMembros" prefHeight="200">
-                    <cellFactory>
-                        <fx:factory>
-                            <ListCell<Usuario>
-                            protected void updateItem(Usuario usuario, boolean empty) {
-                            super.updateItem(usuario, empty);
-                            if (empty || usuario == null) {
-                            setText(null);
-                            } else {
-                            setText(usuario.getNome() + " (" + usuario.getCargo() + ")");
-                            }
-                            }
-                        </ListCell>
-                        </fx:factory>
-                    </cellFactory>
-                </ListView>
-                <Label text="Total de membros: " style="-fx-text-fill: #666;">
-                    <graphic>
-                        <Label text="0" style="-fx-font-weight: bold;">
-                            <text>
-                                <fx:bind listViewMembros.items.size/>
-                            </text>
-                        </Label>
-                    </graphic>
-                </Label>
+                <ListView fx:id="listViewMembros" prefHeight="200"/>
+                <Label text="Total de membros: 0" style="-fx-text-fill: #666;"/>
             </VBox>
 
             <!-- Coluna de Projetos -->
@@ -84,31 +63,8 @@
                     <Button text="+ Adicionar Projetos" onAction="#handleAdicionarProjetos"
                             style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-size: 12px;"/>
                 </HBox>
-                <ListView fx:id="listViewProjetos" prefHeight="200">
-                    <cellFactory>
-                        <fx:factory>
-                            <ListCell<Projeto>
-                            protected void updateItem(Projeto projeto, boolean empty) {
-                            super.updateItem(projeto, empty);
-                            if (empty || projeto == null) {
-                            setText(null);
-                            } else {
-                            setText(projeto.getNome() + " - " + projeto.getStatus());
-                            }
-                            }
-                        </ListCell>
-                        </fx:factory>
-                    </cellFactory>
-                </ListView>
-                <Label text="Total de projetos: " style="-fx-text-fill: #666;">
-                    <graphic>
-                        <Label text="0" style="-fx-font-weight: bold;">
-                            <text>
-                                <fx:bind listViewProjetos.items.size/>
-                            </text>
-                        </Label>
-                    </graphic>
-                </Label>
+                <ListView fx:id="listViewProjetos" prefHeight="200"/>
+                <Label text="Total de projetos: 0" style="-fx-text-fill: #666;"/>
             </VBox>
         </HBox>
 
