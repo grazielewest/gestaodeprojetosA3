@@ -4,49 +4,61 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="Controller.EquipesViewController"
-            prefWidth="800" prefHeight="600">
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controller.EquipesViewController"
+      spacing="20" style="-fx-padding: 20;">
 
-    <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
-        <!-- Cabeçalho -->
-        <HBox spacing="15" alignment="CENTER_LEFT">
-            <Label text="👥 Gerenciamento de Equipes" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-            <Button text="➕ Nova Equipe" onAction="#handleNovaEquipe"
-                    style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;"/>
-        </HBox>
+    <!-- Título -->
+    <Label text="Gerenciamento de Equipes"
+           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
 
-        <Separator/>
+    <!-- Botão Nova Equipe -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="➕ Nova Equipe" onAction="#handleNovaEquipe"
+                style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 120px;"/>
+    </HBox>
 
-        <!-- Tabela com colunas declaradas -->
-        <TableView fx:id="tabelaEquipes" prefHeight="400">
-            <columns>
-                <TableColumn fx:id="colId" text="ID" prefWidth="50" />
-                <TableColumn fx:id="colNome" text="Nome" prefWidth="200" />
-                <TableColumn fx:id="colMembros" text="Membros" prefWidth="100" />
-                <TableColumn fx:id="colProjetos" text="Projetos" prefWidth="100" />
-                <TableColumn fx:id="colStatus" text="Status" prefWidth="100" />
-                <TableColumn fx:id="colAcoes" text="Ações" prefWidth="150" />
-            </columns>
-        </TableView>
+    <!-- Tabela de Equipes -->
+    <TableView fx:id="tabelaEquipes" prefHeight="400">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="colNome" text="Nome" prefWidth="200"/>
+            <TableColumn fx:id="colMembros" text="Membros" prefWidth="80"/>
+            <TableColumn fx:id="colProjetos" text="Projetos" prefWidth="80"/>
+            <TableColumn fx:id="colStatus" text="Status" prefWidth="80"/>
+            <TableColumn fx:id="colAcoes" text="Ações" prefWidth="150"/>
+        </columns>
+    </TableView>
 
-        <!-- Rodapé com estatísticas -->
-        <HBox spacing="20" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-radius: 5;">
-            <Label text="Total de equipes: ">
-                <graphic>
-                    <Label fx:id="lblTotalEquipes" style="-fx-font-weight: bold;"/>
-                </graphic>
-            </Label>
-            <Label text="Equipes ativas: ">
-                <graphic>
-                    <Label fx:id="lblEquipesAtivas" style="-fx-font-weight: bold; -fx-text-fill: green;"/>
-                </graphic>
-            </Label>
-            <Label text="Total de membros: ">
-                <graphic>
-                    <Label fx:id="lblTotalMembros" style="-fx-font-weight: bold;"/>
-                </graphic>
-            </Label>
+    <!-- Estatísticas -->
+    <VBox spacing="10" style="-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-border-radius: 5;">
+        <Label text="📊 Estatísticas" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+
+        <HBox spacing="30" alignment="CENTER_LEFT">
+            <!-- Total de Equipes -->
+            <VBox spacing="5">
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="Total de equipes:" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblTotalEquipes" text="0" style="-fx-text-fill: #007bff; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                </HBox>
+            </VBox>
+
+            <!-- Equipes Ativas -->
+            <VBox spacing="5">
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="Equipes ativas:" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblEquipesAtivas" text="0" style="-fx-text-fill: #28a745; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                </HBox>
+            </VBox>
+
+            <!-- Total de Membros -->
+            <VBox spacing="5">
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Label text="Total de membros:" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblTotalMembros" text="0" style="-fx-text-fill: #6f42c1; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                </HBox>
+            </VBox>
         </HBox>
     </VBox>
-</AnchorPane>
+
+</VBox>

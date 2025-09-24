@@ -24,6 +24,8 @@ public class EquipeFormController {
     @FXML private ListView<Projeto> listViewProjetos;
     @FXML private Label lblTotalMembros;
     @FXML private Label lblTotalProjetos;
+    @FXML private Button btnCancelar;
+    @FXML private Button btnSalvar;
 
     private Equipe equipeParaEdicao;
     private ObservableList<Usuario> membrosList;
@@ -34,6 +36,9 @@ public class EquipeFormController {
 
     @FXML
     private void initialize() {
+        System.out.println("✅ EquipeFormController inicializando...");
+
+        // Inicializar DAOs
         equipeDAO = new EquipeDAO();
         usuarioDAO = new UsuarioDAO();
         projetoDAO = new ProjetoDAO();
@@ -43,89 +48,116 @@ public class EquipeFormController {
         projetosList = FXCollections.observableArrayList();
 
         // Configurar ListViews
-        listViewMembros.setItems(membrosList);
-        listViewProjetos.setItems(projetosList);
+        if (listViewMembros != null) {
+            listViewMembros.setItems(membrosList);
+        }
+        if (listViewProjetos != null) {
+            listViewProjetos.setItems(projetosList);
+        }
 
         // Configurar cell factories programaticamente
         configurarCellFactories();
 
         // Atualizar totais inicialmente
         atualizarTotais();
+
+        System.out.println("✅ EquipeFormController inicializado com sucesso");
     }
 
     private void configurarCellFactories() {
         // Cell factory para membros
-        listViewMembros.setCellFactory(new Callback<ListView<Usuario>, ListCell<Usuario>>() {
-            @Override
-            public ListCell<Usuario> call(ListView<Usuario> param) {
-                return new ListCell<Usuario>() {
-                    @Override
-                    protected void updateItem(Usuario usuario, boolean empty) {
-                        super.updateItem(usuario, empty);
-                        if (empty || usuario == null) {
-                            setText(null);
-                            setGraphic(null);
-                        } else {
-                            setText(usuario.getNome() + " (" + usuario.getEmail() + ")");
+        if (listViewMembros != null) {
+            listViewMembros.setCellFactory(new Callback<ListView<Usuario>, ListCell<Usuario>>() {
+                @Override
+                public ListCell<Usuario> call(ListView<Usuario> param) {
+                    return new ListCell<Usuario>() {
+                        @Override
+                        protected void updateItem(Usuario usuario, boolean empty) {
+                            super.updateItem(usuario, empty);
+                            if (empty || usuario == null) {
+                                setText(null);
+                                setGraphic(null);
+                            } else {
+                                String perfilDescricao = obterDescricaoPerfil(usuario.getPerfil());
+                                String icone = obterIconePerfil(usuario.getPerfil());
+                                setText(icone + " " + usuario.getNome() + " (" + perfilDescricao + ")");
 
-                            // Botão para remover membro
-                            Button btnRemover = new Button("✕");
-                            btnRemover.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 10px;");
-                            btnRemover.setOnAction(event -> removerMembro(usuario));
+                                // Botão para remover membro
+                                Button btnRemover = new Button("✕");
+                                btnRemover.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 10px;");
+                                btnRemover.setOnAction(event -> removerMembro(usuario));
 
-                            setGraphic(btnRemover);
+                                setGraphic(btnRemover);
+                            }
                         }
-                    }
-                };
-            }
-        });
+                    };
+                }
+            });
+        }
 
         // Cell factory para projetos
-        listViewProjetos.setCellFactory(new Callback<ListView<Projeto>, ListCell<Projeto>>() {
-            @Override
-            public ListCell<Projeto> call(ListView<Projeto> param) {
-                return new ListCell<Projeto>() {
-                    @Override
-                    protected void updateItem(Projeto projeto, boolean empty) {
-                        super.updateItem(projeto, empty);
-                        if (empty || projeto == null) {
-                            setText(null);
-                            setGraphic(null);
-                        } else {
-                            setText(projeto.getNome() + " - " + projeto.getStatus());
+        if (listViewProjetos != null) {
+            listViewProjetos.setCellFactory(new Callback<ListView<Projeto>, ListCell<Projeto>>() {
+                @Override
+                public ListCell<Projeto> call(ListView<Projeto> param) {
+                    return new ListCell<Projeto>() {
+                        @Override
+                        protected void updateItem(Projeto projeto, boolean empty) {
+                            super.updateItem(projeto, empty);
+                            if (empty || projeto == null) {
+                                setText(null);
+                                setGraphic(null);
+                            } else {
+                                setText(projeto.getNome() + " - " + (projeto.getStatus() != null ? projeto.getStatus() : "Sem status"));
 
-                            // Botão para remover projeto
-                            Button btnRemover = new Button("✕");
-                            btnRemover.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 10px;");
-                            btnRemover.setOnAction(event -> removerProjeto(projeto));
+                                // Botão para remover projeto
+                                Button btnRemover = new Button("✕");
+                                btnRemover.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 10px;");
+                                btnRemover.setOnAction(event -> removerProjeto(projeto));
 
-                            setGraphic(btnRemover);
+                                setGraphic(btnRemover);
+                            }
                         }
-                    }
-                };
-            }
-        });
+                    };
+                }
+            });
+        }
     }
 
     private void atualizarTotais() {
-        lblTotalMembros.setText("Total de membros: " + membrosList.size());
-        lblTotalProjetos.setText("Total de projetos: " + projetosList.size());
+        // 🔥 CORREÇÃO: Verificar se os labels não são null antes de usar
+        if (lblTotalMembros != null) {
+            lblTotalMembros.setText("Total de membros: " + membrosList.size());
+        }
+        if (lblTotalProjetos != null) {
+            lblTotalProjetos.setText("Total de projetos: " + projetosList.size());
+        }
     }
 
     public void setEquipeParaEdicao(Equipe equipe) {
         this.equipeParaEdicao = equipe;
         if (equipe != null) {
-            lblTitulo.setText("Editar Equipe - " + equipe.getNome());
-            txtNome.setText(equipe.getNome());
-            txtDescricao.setText(equipe.getDescricao() != null ? equipe.getDescricao() : "");
-            chkAtiva.setSelected(equipe.isAtiva());
+            if (lblTitulo != null) {
+                lblTitulo.setText("Editar Equipe - " + equipe.getNome());
+            }
+            if (txtNome != null) {
+                txtNome.setText(equipe.getNome());
+            }
+            if (txtDescricao != null) {
+                txtDescricao.setText(equipe.getDescricao() != null ? equipe.getDescricao() : "");
+            }
+            if (chkAtiva != null) {
+                chkAtiva.setSelected(equipe.isAtiva());
+            }
 
-            // 🔥 CORREÇÃO AQUI - Carregar membros e projetos existentes
+            // Carregar membros e projetos existentes
             carregarMembrosExistentes(equipe.getId());
             carregarProjetosExistentes(equipe.getId());
 
         } else {
-            lblTitulo.setText("Nova Equipe");
+            if (lblTitulo != null) {
+                lblTitulo.setText("Nova Equipe");
+            }
             // Limpar as listas para nova equipe
             membrosList.clear();
             projetosList.clear();
@@ -133,34 +165,36 @@ public class EquipeFormController {
         atualizarTotais();
     }
 
-    // 🔥 NOVO MÉTODO - Carregar membros existentes da equipe
     private void carregarMembrosExistentes(int equipeId) {
         try {
             // Buscar a equipe completa com membros do banco
             Equipe equipeCompleta = equipeDAO.buscarPorId(equipeId);
             if (equipeCompleta != null && equipeCompleta.getMembros() != null) {
                 membrosList.setAll(equipeCompleta.getMembros());
+                System.out.println("✅ " + equipeCompleta.getMembros().size() + " membros carregados");
             } else {
                 membrosList.clear();
+                System.out.println("ℹ️ Nenhum membro encontrado para a equipe");
             }
         } catch (Exception e) {
-            mostrarAlerta("Erro", "Erro ao carregar membros da equipe: " + e.getMessage());
+            System.out.println("❌ Erro ao carregar membros: " + e.getMessage());
             membrosList.clear();
         }
     }
 
-    // 🔥 NOVO MÉTODO - Carregar projetos existentes da equipe
     private void carregarProjetosExistentes(int equipeId) {
         try {
             // Buscar a equipe completa com projetos do banco
             Equipe equipeCompleta = equipeDAO.buscarPorId(equipeId);
             if (equipeCompleta != null && equipeCompleta.getProjetos() != null) {
                 projetosList.setAll(equipeCompleta.getProjetos());
+                System.out.println("✅ " + equipeCompleta.getProjetos().size() + " projetos carregados");
             } else {
                 projetosList.clear();
+                System.out.println("ℹ️ Nenhum projeto encontrado para a equipe");
             }
         } catch (Exception e) {
-            mostrarAlerta("Erro", "Erro ao carregar projetos da equipe: " + e.getMessage());
+            System.out.println("❌ Erro ao carregar projetos: " + e.getMessage());
             projetosList.clear();
         }
     }
@@ -238,7 +272,51 @@ public class EquipeFormController {
 
         // ListView para seleção
         ListView<T> listView = new ListView<>(itens);
-        listView.setPrefSize(300, 200);
+        listView.setPrefSize(400, 300); // Aumentei um pouco o tamanho
+
+        // 🔥 Configurar cell factory personalizada para usuários (COM ÍCONES)
+        if (itens.size() > 0 && itens.get(0) instanceof Usuario) {
+            listView.setCellFactory(new Callback<ListView<T>, ListCell<T>>() {
+                @Override
+                public ListCell<T> call(ListView<T> param) {
+                    return new ListCell<T>() {
+                        @Override
+                        protected void updateItem(T item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                                setGraphic(null);
+                            } else {
+                                Usuario usuario = (Usuario) item;
+                                String perfilDescricao = obterDescricaoPerfil(usuario.getPerfil());
+                                String icone = obterIconePerfil(usuario.getPerfil());
+                                setText(icone + " " + usuario.getNome() + " - " + perfilDescricao);
+                            }
+                        }
+                    };
+                }
+            });
+        } else if (itens.size() > 0 && itens.get(0) instanceof Projeto) {
+            // Manter a cell factory original para projetos
+            listView.setCellFactory(new Callback<ListView<T>, ListCell<T>>() {
+                @Override
+                public ListCell<T> call(ListView<T> param) {
+                    return new ListCell<T>() {
+                        @Override
+                        protected void updateItem(T item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                                setGraphic(null);
+                            } else {
+                                Projeto projeto = (Projeto) item;
+                                setText(projeto.getNome() + " - " + projeto.getStatus());
+                            }
+                        }
+                    };
+                }
+            });
+        }
 
         dialog.getDialogPane().setContent(listView);
 
@@ -251,6 +329,38 @@ public class EquipeFormController {
         });
 
         return dialog;
+    }
+
+    // 🔥 MÉTODO CORRIGIDO: Converter enum Perfil para descrição amigável
+    private String obterDescricaoPerfil(Usuario.Perfil perfil) {
+        if (perfil == null) return "Sem perfil";
+
+        switch (perfil) {
+            case ADMINISTRADOR:
+                return "Administrador";
+            case GERENTE:
+                return "Gerente";
+            case COLABORADOR:
+                return "Colaborador";
+            default:
+                return perfil.name();
+        }
+    }
+
+    // 🔥 MÉTODO PARA OBTER ÍCONES
+    private String obterIconePerfil(Usuario.Perfil perfil) {
+        if (perfil == null) return "👤";
+
+        switch (perfil) {
+            case ADMINISTRADOR:
+                return "👑";
+            case GERENTE:
+                return "💼";
+            case COLABORADOR:
+                return "👨‍💼";
+            default:
+                return "👤";
+        }
     }
 
     private void removerMembro(Usuario usuario) {
@@ -296,7 +406,7 @@ public class EquipeFormController {
                 equipeParaEdicao.setDescricao(txtDescricao.getText().trim());
                 equipeParaEdicao.setAtiva(chkAtiva.isSelected());
 
-                // 🔥 CORREÇÃO AQUI - Adicionar membros e projetos à equipe
+                // Adicionar membros e projetos à equipe
                 equipeParaEdicao.getMembros().clear();
                 equipeParaEdicao.getMembros().addAll(membrosList);
 
