@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controller.UsuarioFormController"
+            prefWidth="500" prefHeight="600"
+            style="-fx-padding: 20;">
+
+    <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+        <!-- Título -->
+        <Label fx:id="lblTitulo" text="Novo Usuário"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+        <Separator style="-fx-padding: 5px 0;"/>
+
+        <!-- Formulário -->
+        <GridPane hgap="10" vgap="15">
+            <columnConstraints>
+                <ColumnConstraints prefWidth="120"/>
+                <ColumnConstraints prefWidth="300"/>
+            </columnConstraints>
+
+            <!-- Nome Completo -->
+            <Label text="Nome Completo:" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="txtNome" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                       promptText="Digite o nome completo"/>
+
+            <!-- CPF -->
+            <Label text="CPF:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="txtCpf" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                       promptText="000.000.000-00"/>
+
+            <!-- Email -->
+            <Label text="Email:" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="txtEmail" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                       promptText="usuario@exemplo.com"/>
+
+            <!-- Cargo -->
+            <Label text="Cargo:" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="txtCargo" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                       promptText="Ex: Desenvolvedor, Gerente, etc."/>
+
+            <!-- Login -->
+            <Label text="Login:" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <TextField fx:id="txtLogin" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                       promptText="Nome de usuário para login"/>
+
+            <!-- Senha -->
+            <Label text="Senha:" GridPane.rowIndex="5" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <PasswordField fx:id="txtSenha" GridPane.rowIndex="5" GridPane.columnIndex="1"
+                           promptText="Digite a senha"/>
+
+            <!-- Perfil -->
+            <Label text="Perfil:" GridPane.rowIndex="6" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <ComboBox fx:id="cbPerfil" GridPane.rowIndex="6" GridPane.columnIndex="1"
+                      promptText="Selecione o perfil"/>
+
+            <!-- Ativo -->
+            <Label text="Status:" GridPane.rowIndex="7" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <HBox spacing="10" GridPane.rowIndex="7" GridPane.columnIndex="1" alignment="CENTER_LEFT">
+                <CheckBox fx:id="chkAtivo" text="Usuário ativo" selected="true"/>
+                <Label text="(Desmarque para desativar o usuário)" style="-fx-text-fill: #666; -fx-font-size: 11px;"/>
+            </HBox>
+        </GridPane>
+
+        <!-- Área de informações -->
+        <VBox spacing="5" style="-fx-background-color: #f8f9fa; -fx-padding: 10; -fx-border-radius: 5;">
+            <Label text="💡 Informações:" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label text="• Senha: Mínimo 6 caracteres" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+            <Label text="• Perfil ADMINISTRADOR: Acesso total ao sistema" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+            <Label text="• Perfil GERENTE: Pode gerenciar projetos" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+            <Label text="• Perfil COLABORADOR: Acesso básico" style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+        </VBox>
+
+        <!-- Botões -->
+        <HBox spacing="15" style="-fx-padding: 20 0 0 0;" alignment="CENTER_RIGHT">
+            <Button fx:id="btnCancelar" text="Cancelar" onAction="#handleCancelar"
+                    style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 100px;"/>
+            <Button fx:id="btnSalvar" text="Salvar" onAction="#handleSalvar"
+                    style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 100px;"/>
+        </HBox>
+    </VBox>
+</AnchorPane>
