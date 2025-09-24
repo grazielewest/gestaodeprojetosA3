@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Callback;
+import javafx.scene.layout.HBox;
 
 import java.util.List;
 
