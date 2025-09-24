@@ -7,15 +7,24 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.util.Callback;
 
 import java.util.List;
 
 public class EquipesViewController {
 
     @FXML private TableView<Equipe> tabelaEquipes;
+    @FXML private TableColumn<Equipe, Integer> colId;
+    @FXML private TableColumn<Equipe, String> colNome;
+    @FXML private TableColumn<Equipe, Integer> colMembros;
+    @FXML private TableColumn<Equipe, Integer> colProjetos;
+    @FXML private TableColumn<Equipe, Boolean> colStatus;
+    @FXML private TableColumn<Equipe, Void> colAcoes;
+
     @FXML private Label lblTotalEquipes;
     @FXML private Label lblEquipesAtivas;
     @FXML private Label lblTotalMembros;
@@ -29,13 +38,69 @@ public class EquipesViewController {
         configurarTabela();
         carregarEquipes();
         atualizarEstatisticas();
-
-        // Passar referência do controller para a tabela
-        tabelaEquipes.getProperties().put("controller", this);
     }
 
     private void configurarTabela() {
-        // Configuração básica da tabela
+        // Configurar as colunas programaticamente
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
+        colMembros.setCellValueFactory(new PropertyValueFactory<>("quantidadeMembros"));
+        colProjetos.setCellValueFactory(new PropertyValueFactory<>("quantidadeProjetos"));
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("ativa"));
+
+        // Configurar célula personalizada para status
+        colStatus.setCellFactory(column -> new TableCell<Equipe, Boolean>() {
+            @Override
+            protected void updateItem(Boolean ativa, boolean empty) {
+                super.updateItem(ativa, empty);
+                if (empty || ativa == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(ativa ? "Ativa" : "Inativa");
+                    setStyle(ativa ? "-fx-text-fill: green; -fx-font-weight: bold;" : "-fx-text-fill: red;");
+                }
+            }
+        });
+
+        // Configurar coluna de ações
+        colAcoes.setCellFactory(new Callback<TableColumn<Equipe, Void>, TableCell<Equipe, Void>>() {
+            @Override
+            public TableCell<Equipe, Void> call(TableColumn<Equipe, Void> param) {
+                return new TableCell<Equipe, Void>() {
+                    private final Button btnEditar = new Button("Editar");
+                    private final Button btnExcluir = new Button("Excluir");
+
+                    {
+                        btnEditar.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 11px;");
+                        btnExcluir.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 11px;");
+
+                        btnEditar.setOnAction(event -> {
+                            Equipe equipe = getTableView().getItems().get(getIndex());
+                            editarEquipe(equipe);
+                        });
+
+                        btnExcluir.setOnAction(event -> {
+                            Equipe equipe = getTableView().getItems().get(getIndex());
+                            excluirEquipe(equipe);
+                        });
+                    }
+
+                    @Override
+                    protected void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            HBox botoes = new HBox(5, btnEditar, btnExcluir);
+                            setGraphic(botoes);
+                        }
+                    }
+                };
+            }
+        });
+
+        // Configurar placeholder
         tabelaEquipes.setPlaceholder(new Label("Nenhuma equipe cadastrada."));
     }
 
@@ -54,6 +119,8 @@ public class EquipesViewController {
     }
 
     private void atualizarEstatisticas() {
+        if (equipesList == null) return;
+
         int totalEquipes = equipesList.size();
         int equipesAtivas = (int) equipesList.stream().filter(Equipe::isAtiva).count();
         int totalMembros = equipesList.stream().mapToInt(Equipe::getQuantidadeMembros).sum();

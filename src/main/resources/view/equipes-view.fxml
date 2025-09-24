@@ -18,109 +18,35 @@
 
         <Separator/>
 
-        <!-- Tabela de Equipes -->
+        <!-- Tabela com colunas declaradas -->
         <TableView fx:id="tabelaEquipes" prefHeight="400">
             <columns>
-                <TableColumn text="ID" prefWidth="50">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="id"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn text="Nome" prefWidth="200">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="nome"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn text="Membros" prefWidth="100">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="quantidadeMembros"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn text="Projetos" prefWidth="100">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="quantidadeProjetos"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn text="Status" prefWidth="100">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="ativa"/>
-                    </cellValueFactory>
-                    <cellFactory>
-                        <fx:factory>
-                            <TableCell<Equipe, Boolean>
-                            protected void updateItem(Boolean ativa, boolean empty) {
-                            super.updateItem(ativa, empty);
-                            if (empty || ativa == null) {
-                            setText(null);
-                            setStyle("");
-                            } else {
-                            setText(ativa ? "Ativa" : "Inativa");
-                            setStyle(ativa ? "-fx-text-fill: green; -fx-font-weight: bold;" : "-fx-text-fill: red;");
-                            }
-                            }
-                        </TableCell>
-                    </fx:factory>
-                </cellFactory>
-            </TableColumn>
-            <TableColumn text="Ações" prefWidth="150">
-                <cellFactory>
-                    <fx:factory>
-                        <TableCell<Equipe, Void>
-                        private final Button btnEditar = new Button("Editar");
-                        private final Button btnExcluir = new Button("Excluir");
-
-                        {
-                        btnEditar.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 11px;");
-                        btnExcluir.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 11px;");
-
-                        btnEditar.setOnAction(event -> {
-                        Equipe equipe = getTableView().getItems().get(getIndex());
-                        getController().editarEquipe(equipe);
-                        });
-
-                        btnExcluir.setOnAction(event -> {
-                        Equipe equipe = getTableView().getItems().get(getIndex());
-                        getController().excluirEquipe(equipe);
-                        });
-                        }
-
-                        protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                        setGraphic(null);
-                        } else {
-                        HBox botoes = new HBox(5, btnEditar, btnExcluir);
-                        setGraphic(botoes);
-                        }
-                        }
-
-                        private EquipesViewController getController() {
-                        return (EquipesViewController) getTableView().getProperties().get("controller");
-                        }
-                    </TableCell>
-                </fx:factory>
-            </cellFactory>
-        </TableColumn>
-    </columns>
-</TableView>
+                <TableColumn fx:id="colId" text="ID" prefWidth="50" />
+                <TableColumn fx:id="colNome" text="Nome" prefWidth="200" />
+                <TableColumn fx:id="colMembros" text="Membros" prefWidth="100" />
+                <TableColumn fx:id="colProjetos" text="Projetos" prefWidth="100" />
+                <TableColumn fx:id="colStatus" text="Status" prefWidth="100" />
+                <TableColumn fx:id="colAcoes" text="Ações" prefWidth="150" />
+            </columns>
+        </TableView>
 
         <!-- Rodapé com estatísticas -->
-<HBox spacing="20" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-radius: 5;">
-<Label text="Total de equipes: ">
-    <graphic>
-        <Label fx:id="lblTotalEquipes" style="-fx-font-weight: bold;"/>
-    </graphic>
-</Label>
-<Label text="Equipes ativas: ">
-    <graphic>
-        <Label fx:id="lblEquipesAtivas" style="-fx-font-weight: bold; -fx-text-fill: green;"/>
-    </graphic>
-</Label>
-<Label text="Total de membros: ">
-    <graphic>
-        <Label fx:id="lblTotalMembros" style="-fx-font-weight: bold;"/>
-    </graphic>
-</Label>
-</HBox>
-        </VBox>
-        </AnchorPane>
+        <HBox spacing="20" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-radius: 5;">
+            <Label text="Total de equipes: ">
+                <graphic>
+                    <Label fx:id="lblTotalEquipes" style="-fx-font-weight: bold;"/>
+                </graphic>
+            </Label>
+            <Label text="Equipes ativas: ">
+                <graphic>
+                    <Label fx:id="lblEquipesAtivas" style="-fx-font-weight: bold; -fx-text-fill: green;"/>
+                </graphic>
+            </Label>
+            <Label text="Total de membros: ">
+                <graphic>
+                    <Label fx:id="lblTotalMembros" style="-fx-font-weight: bold;"/>
+                </graphic>
+            </Label>
+        </HBox>
+    </VBox>
+</AnchorPane>
