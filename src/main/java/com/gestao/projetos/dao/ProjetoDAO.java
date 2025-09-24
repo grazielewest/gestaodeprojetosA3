@@ -14,7 +14,8 @@ public class ProjetoDAO {
 
     // SQL statements - CORRETOS para sua estrutura
     private static final String INSERT_SQL = "INSERT INTO projetos (nome, descricao, status, data_inicio, data_fim, orcamento, id_responsavel, prioridade) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String SELECT_ALL_SQL = "SELECT * FROM projetos ORDER BY data_criacao DESC";
+    // No ProjetoDAO.java - Corrigir a query
+    private static final String SELECT_ALL_SQL = "SELECT * FROM projetos ORDER BY id DESC";
     private static final String UPDATE_SQL = "UPDATE projetos SET nome = ?, descricao = ?, status = ?, data_inicio = ?, data_fim = ?, orcamento = ?, id_responsavel = ?, prioridade = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM projetos WHERE id = ?";
 
@@ -47,6 +48,24 @@ public class ProjetoDAO {
     }
 
     // Seus métodos existentes continuam daqui...
+    // Adicione este metodo no ProjetoDAO para diagnosticar a tabela
+    public void verificarEstruturaTabela() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet columns = metaData.getColumns(null, null, "projetos", null);
+
+            System.out.println("📋 Estrutura da tabela 'projetos':");
+            while (columns.next()) {
+                String columnName = columns.getString("COLUMN_NAME");
+                String columnType = columns.getString("TYPE_NAME");
+                System.out.println("• " + columnName + " (" + columnType + ")");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("❌ Erro ao verificar estrutura da tabela: " + e.getMessage());
+        }
+    }
+
     public boolean salvar(Projeto projeto) {
         System.out.println("🔄 Tentando salvar projeto: " + projeto.getNome());
 
@@ -106,13 +125,37 @@ public class ProjetoDAO {
         }
     }
 
+    // No ProjetoDAO.java - Método corrigido
     public List<Projeto> listarTodos() {
         System.out.println("🔄 Listando todos os projetos...");
         List<Projeto> projetos = new ArrayList<>();
 
+        // Primeiro, verificar qual coluna de data existe
+        String orderByColumn = "id"; // padrão
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet columns = metaData.getColumns(null, null, "projetos", null);
+
+            while (columns.next()) {
+                String columnName = columns.getString("COLUMN_NAME");
+                if (columnName.equalsIgnoreCase("data_criacao") ||
+                        columnName.equalsIgnoreCase("created_at") ||
+                        columnName.equalsIgnoreCase("data_criacao")) {
+                    orderByColumn = columnName;
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("⚠️ Não foi possível detectar coluna de data, usando ordenação por ID");
+        }
+
+        String sql = "SELECT * FROM projetos ORDER BY " + orderByColumn + " DESC";
+        System.out.println("📋 SQL de consulta: " + sql);
+
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(SELECT_ALL_SQL)) {
+             ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 Projeto projeto = mapearResultSetParaProjeto(rs);
@@ -127,6 +170,29 @@ public class ProjetoDAO {
             logger.log(Level.SEVERE, "Erro ao listar projetos", e);
         }
         return projetos;
+    }
+
+    // Adicione este método no ProjetoDAO
+    public void verificarECriarColunasFaltantes() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            // Verificar se data_criacao existe
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet columns = metaData.getColumns(null, null, "projetos", "data_criacao");
+
+            if (!columns.next()) {
+                // Coluna não existe, criar ela
+                String sql = "ALTER TABLE projetos ADD COLUMN data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.execute(sql);
+                    System.out.println("✅ Coluna data_criacao criada com sucesso");
+                }
+            } else {
+                System.out.println("✅ Coluna data_criacao já existe");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("❌ Erro ao verificar/criar colunas: " + e.getMessage());
+        }
     }
 
     public boolean atualizar(Projeto projeto) {
