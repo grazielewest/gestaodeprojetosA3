@@ -12,20 +12,20 @@ import java.util.logging.Logger;
 public class UsuarioDAO {
     private static final Logger logger = Logger.getLogger(UsuarioDAO.class.getName());
 
-    // Método para criar tabela se não existir
+    // Metodo para criar tabela se não existir
     public void criarTabela() {
         String sql = "CREATE TABLE IF NOT EXISTS usuarios (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "username TEXT UNIQUE NOT NULL, " +
-                "password TEXT NOT NULL, " +
-                "nome TEXT NOT NULL, " +
-                "email TEXT UNIQUE NOT NULL, " +
-                "cpf TEXT UNIQUE, " +
-                "cargo TEXT, " +
-                "perfil TEXT NOT NULL DEFAULT 'COLABORADOR', " +
-                "ativo BOOLEAN DEFAULT 1, " +
-                "data_criacao DATE DEFAULT CURRENT_DATE, " +
-                "data_atualizacao DATE" +
+                "id INT PRIMARY KEY AUTO_INCREMENT, " +
+                "username VARCHAR(100) UNIQUE NOT NULL, " +
+                "password VARCHAR(255) NOT NULL, " +
+                "nome VARCHAR(255) NOT NULL, " +
+                "email VARCHAR(255) UNIQUE NOT NULL, " +
+                "cpf VARCHAR(14) UNIQUE, " +
+                "cargo VARCHAR(100), " +
+                "perfil VARCHAR(50) NOT NULL DEFAULT 'COLABORADOR', " +
+                "ativo BOOLEAN DEFAULT TRUE, " +
+                "data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "data_atualizacao TIMESTAMP NULL" +
                 ")";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -56,7 +56,7 @@ public class UsuarioDAO {
         }
     }
 
-    // Seu método salvar existente (mantenha como está)
+    // Seu metodo salvar existente (mantenha como está)
     public boolean salvar(Usuario usuario) {
         String sql = "INSERT INTO usuarios (username, password, nome, email, cpf, cargo, perfil, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -90,7 +90,7 @@ public class UsuarioDAO {
         return false;
     }
 
-    // Método para atualizar usuário (NOVO)
+    // Metodo para atualizar usuário (NOVO)
     public boolean atualizar(Usuario usuario) {
         String sql = "UPDATE usuarios SET username = ?, password = ?, nome = ?, email = ?, cpf = ?, cargo = ?, perfil = ?, ativo = ?, data_atualizacao = CURRENT_DATE WHERE id = ?";
 
@@ -119,7 +119,7 @@ public class UsuarioDAO {
         return false;
     }
 
-    // Método para buscar por ID (NOVO)
+    // Metodo para buscar por ID (NOVO)
     public Usuario buscarPorId(int id) {
         String sql = "SELECT * FROM usuarios WHERE id = ?";
 
@@ -140,7 +140,7 @@ public class UsuarioDAO {
         return null;
     }
 
-    // Método para excluir (desativar) usuário (NOVO)
+    // Metodo para excluir (desativar) usuário (NOVO)
     public boolean excluir(int id) {
         String sql = "UPDATE usuarios SET ativo = 0, data_atualizacao = CURRENT_DATE WHERE id = ?";
 

@@ -14,25 +14,25 @@ public class ProjetoDAO {
 
     // SQL statements - CORRETOS para sua estrutura
     private static final String INSERT_SQL = "INSERT INTO projetos (nome, descricao, status, data_inicio, data_fim, orcamento, id_responsavel, prioridade) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String SELECT_ALL_SQL = "SELECT * FROM projetos ORDER BY created_at DESC";
+    private static final String SELECT_ALL_SQL = "SELECT * FROM projetos ORDER BY data_criacao DESC";
     private static final String UPDATE_SQL = "UPDATE projetos SET nome = ?, descricao = ?, status = ?, data_inicio = ?, data_fim = ?, orcamento = ?, id_responsavel = ?, prioridade = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM projetos WHERE id = ?";
 
     // ✅ METODO ADICIONADO: Criar tabela de projetos
     public void criarTabela() {
         String sql = "CREATE TABLE IF NOT EXISTS projetos (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "nome TEXT NOT NULL, " +
+                "id INT PRIMARY KEY AUTO_INCREMENT, " +
+                "nome VARCHAR(255) NOT NULL, " +
                 "descricao TEXT, " +
                 "data_inicio DATE, " +
                 "data_fim DATE, " +
-                "status TEXT, " +
-                "id_responsavel INTEGER, " +
-                "orcamento REAL, " +
-                "prioridade TEXT, " +
-                "data_criacao DATE DEFAULT CURRENT_DATE, " +
-                "data_atualizacao DATE, " +
-                "FOREIGN KEY (id_responsavel) REFERENCES usuarios(id)" +
+                "status VARCHAR(50), " +
+                "id_responsavel INT, " +
+                "orcamento DECIMAL(10,2), " +
+                "prioridade VARCHAR(50), " +
+                "data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "data_atualizacao TIMESTAMP NULL, " +
+                "FOREIGN KEY (id_responsavel) REFERENCES usuarios(id) ON DELETE SET NULL" +
                 ")";
 
         try (Connection conn = DatabaseConnection.getConnection();
