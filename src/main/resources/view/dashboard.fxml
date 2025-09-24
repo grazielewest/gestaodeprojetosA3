@@ -43,13 +43,13 @@
                         </VBox>
 
                         <VBox style="-fx-background-color: #dc3545; -fx-padding: 20; -fx-background-radius: 10;" spacing="10">
-                            <Label text="Atrasos" style="-fx-text-fill: white; -fx-font-size: 16px;"/>
+                            <Label text="Projetos Atrasados" style="-fx-text-fill: white; -fx-font-size: 16px;"/>
                             <Label text="8" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
                         </VBox>
 
                         <!-- Botão de Usuários Adicionado -->
                         <VBox style="-fx-background-color: #17a2b8; -fx-padding: 20; -fx-background-radius: 10;" spacing="10">
-                            <Button text="👥 Usuários" onAction="#handleGerenciarUsuarios"
+                            <Button text="Usuários" onAction="#handleGerenciarUsuarios"
                                     style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-width: 1px;"
                                     maxWidth="Infinity"/>
                         </VBox>
