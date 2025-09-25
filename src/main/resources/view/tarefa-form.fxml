@@ -11,7 +11,7 @@
             style="-fx-padding: 20;">
 
     <ScrollPane fitToWidth="true">
-        <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+        <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20" style="-fx-padding: 10 15px;">
             <Label fx:id="lblTitulo" text="Nova Tarefa" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
             <Separator style="-fx-padding: 5px 0;"/>
