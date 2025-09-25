@@ -36,6 +36,28 @@ public class DashboardController {
     @FXML
     private TableColumn<Projeto, String> colDataFim;
 
+    @FXML
+    private TableColumn<Projeto, String> colResponsavel;
+
+    @FXML
+    private TableColumn<Projeto, String> colEquipes;
+
+    // Labels para o dashboard
+    @FXML
+    private Label lblProjetosAtivos;
+    @FXML
+    private Label lblTarefasPendentes;
+    @FXML
+    private Label lblProjetosAtrasados;
+    @FXML
+    private Label lblEquipesAtivas;
+    @FXML
+    private Label lblTotalProjetos;
+    @FXML
+    private Label lblUsuario;
+    @FXML
+    private Label lblStatus;
+
     private ProjetoDAO projetoDAO;
     private ObservableList<Projeto> projetosList;
 
@@ -44,16 +66,31 @@ public class DashboardController {
         projetoDAO = new ProjetoDAO();
         configurarTabela();
         carregarProjetos();
+        atualizarDashboard();
+        configurarLabels();
     }
 
     private void configurarTabela() {
+        // Configuração das colunas básicas
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("statusDisplay"));
         colDataInicio.setCellValueFactory(new PropertyValueFactory<>("dataInicioFormatada"));
         colDataFim.setCellValueFactory(new PropertyValueFactory<>("dataFimFormatada"));
 
-        // Adicione esta linha para formatação personalizada
+        // 🔥 CORREÇÃO: Use os métodos corretos da sua classe Projeto
+        colResponsavel.setCellValueFactory(cellData -> {
+            Projeto projeto = cellData.getValue();
+            return new javafx.beans.property.SimpleStringProperty(projeto.getNomeResponsavel());
+        });
+
+        colEquipes.setCellValueFactory(cellData -> {
+            Projeto projeto = cellData.getValue();
+            return new javafx.beans.property.SimpleStringProperty(projeto.getNomesEquipes());
+        });
+
+
+        // Formatação personalizada para status
         colStatus.setCellFactory(column -> new TableCell<Projeto, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -67,9 +104,11 @@ public class DashboardController {
                     if (projeto.estaAtrasado()) {
                         setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
                     } else if ("Concluído".equals(projeto.getStatus())) {
-                        setStyle("-fx-text-fill: green;");
+                        setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                    } else if ("Em Andamento".equals(projeto.getStatus())) {
+                        setStyle("-fx-text-fill: #007bff; -fx-font-weight: bold;");
                     } else {
-                        setStyle("");
+                        setStyle("-fx-text-fill: #6c757d;");
                     }
                 }
             }
@@ -86,12 +125,77 @@ public class DashboardController {
             projetosList = FXCollections.observableArrayList(projetos);
             tabelaProjetos.setItems(projetosList);
 
+            // Atualiza o label de total de projetos
+            if (lblTotalProjetos != null) {
+                lblTotalProjetos.setText("Total: " + projetos.size() + " projetos");
+            }
+
             System.out.println("✅ " + projetos.size() + " projetos carregados na tabela");
 
         } catch (Exception e) {
             System.out.println("❌ Erro ao carregar projetos: " + e.getMessage());
             showAlert("Erro", "Erro ao carregar projetos: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private void atualizarDashboard() {
+        try {
+            List<Projeto> projetos = projetoDAO.listarTodos();
+
+            // Calcular métricas
+            long projetosAtivos = projetos.stream()
+                    .filter(p -> "Em Andamento".equals(p.getStatus()))
+                    .count();
+
+            long projetosAtrasados = projetos.stream()
+                    .filter(Projeto::estaAtrasado)
+                    .count();
+
+            // Aqui você pode adicionar lógica para tarefas pendentes e equipes ativas
+            // Por enquanto, vou usar valores placeholder
+            int tarefasPendentes = calcularTarefasPendentes(projetos);
+            int equipesAtivas = calcularEquipesAtivas(projetos);
+
+            // Atualizar os labels do dashboard
+            if (lblProjetosAtivos != null) {
+                lblProjetosAtivos.setText(String.valueOf(projetosAtivos));
+            }
+            if (lblProjetosAtrasados != null) {
+                lblProjetosAtrasados.setText(String.valueOf(projetosAtrasados));
+            }
+            if (lblTarefasPendentes != null) {
+                lblTarefasPendentes.setText(String.valueOf(tarefasPendentes));
+            }
+            if (lblEquipesAtivas != null) {
+                lblEquipesAtivas.setText(String.valueOf(equipesAtivas));
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao atualizar dashboard: " + e.getMessage());
+        }
+    }
+
+    private int calcularTarefasPendentes(List<Projeto> projetos) {
+        // Placeholder - implemente sua lógica real aqui
+        return projetos.stream()
+                .mapToInt(p -> 5) // Exemplo: cada projeto tem 5 tarefas pendentes
+                .sum();
+    }
+
+    private int calcularEquipesAtivas(List<Projeto> projetos) {
+        // Placeholder - implemente sua lógica real aqui
+        return (int) projetos.stream()
+                .filter(p -> p.getEquipes() != null && !p.getEquipes().isEmpty())
+                .count();
+    }
+
+    private void configurarLabels() {
+        if (lblUsuario != null) {
+            lblUsuario.setText("Usuário: Admin"); // Você pode tornar isso dinâmico
+        }
+        if (lblStatus != null) {
+            lblStatus.setText("✅ Conectado como Admin | Sistema: Gestão de Projetos v1.0 | © 2024");
         }
     }
 
@@ -104,6 +208,7 @@ public class DashboardController {
     private void handleGerenciarProjetos() {
         // Já estamos na aba de projetos, apenas recarrega os dados
         carregarProjetos();
+        atualizarDashboard();
         showAlert("Info", "Projetos recarregados com sucesso!");
     }
 
@@ -119,10 +224,13 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.setTitle("Novo Projeto");
             stage.setScene(new Scene(root));
-            stage.showAndWait(); // Aguarda o fechamento do formulário
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tabelaProjetos.getScene().getWindow());
+            stage.showAndWait();
 
             // Recarrega os projetos após fechar o formulário
             carregarProjetos();
+            atualizarDashboard();
 
         } catch (Exception e) {
             showAlert("Erro", "Não foi possível abrir o formulário de projeto: " + e.getMessage());
@@ -150,10 +258,13 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.setTitle("Editar Projeto - " + projetoSelecionado.getNome());
             stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tabelaProjetos.getScene().getWindow());
             stage.showAndWait();
 
             // Recarrega os projetos após edição
             carregarProjetos();
+            atualizarDashboard();
 
         } catch (Exception e) {
             showAlert("Erro", "Erro ao abrir formulário de edição: " + e.getMessage());
@@ -183,6 +294,7 @@ public class DashboardController {
                 if (sucesso) {
                     showAlert("Sucesso", "Projeto excluído com sucesso!");
                     carregarProjetos(); // Recarrega a lista
+                    atualizarDashboard();
                 } else {
                     showAlert("Erro", "Não foi possível excluir o projeto.");
                 }
@@ -204,15 +316,12 @@ public class DashboardController {
         try {
             System.out.println("📋 Tentando visualizar projeto: " + projetoSelecionado.getNome());
 
-            // ✅ Use o mesmo arquivo FXML do formulário, mas no modo visualização
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/projeto-form.fxml"));
             Parent root = loader.load();
 
             ProjetoFormController controller = loader.getController();
             controller.setProjetoParaEdicao(projetoSelecionado);
             controller.setDashboardController(this);
-
-            // ✅ Configure o modo de visualização (somente leitura)
             controller.configurarModoVisualizacao();
 
             Stage stage = new Stage();
@@ -243,15 +352,22 @@ public class DashboardController {
             for (Projeto projeto : projetos) {
                 relatorio.append("ID: ").append(projeto.getId()).append("\n");
                 relatorio.append("Nome: ").append(projeto.getNome()).append("\n");
-                relatorio.append("Status: ").append(projeto.getStatus()).append("\n");
-                relatorio.append("Data Início: ").append(projeto.getDataInicio()).append("\n");
-                relatorio.append("Data Fim: ").append(projeto.getDataFim()).append("\n");
+                relatorio.append("Status: ").append(projeto.getStatusDisplay()).append("\n");
+
+                //  CORREÇÃO
+                relatorio.append("Responsável: ").append(projeto.getNomeResponsavel()).append("\n");
+
+                relatorio.append("Data Início: ").append(projeto.getDataInicioFormatada()).append("\n");
+                relatorio.append("Data Fim: ").append(projeto.getDataFimFormatada()).append("\n");
+
+                //  CORREÇÃO
+                relatorio.append("Equipes: ").append(projeto.getNomesEquipes()).append("\n");
+                relatorio.append("Quantidade de Equipes: ").append(projeto.getQuantidadeEquipes()).append("\n");
                 relatorio.append("-----------------------------\n");
             }
 
             relatorio.append("\nTotal de Projetos: ").append(projetos.size());
 
-            // Mostrar relatório em uma nova janela
             TextArea textArea = new TextArea(relatorio.toString());
             textArea.setEditable(false);
             textArea.setWrapText(true);
@@ -270,8 +386,6 @@ public class DashboardController {
         }
     }
 
-
-    // No DashboardController.java - método corrigido
     @FXML
     private void handleGerenciarUsuarios() {
         try {
@@ -281,6 +395,8 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.setTitle("Gerenciar Usuários");
             stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tabelaProjetos.getScene().getWindow());
             stage.show();
 
         } catch (Exception e) {
@@ -288,25 +404,6 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
-
-    @FXML
-    private void handleNovoUsuario() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/usuario-form.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setTitle("Novo Usuário");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-        } catch (Exception e) {
-            showAlert("Erro", "Erro ao abrir formulário de usuário: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    // No DashboardController.java - adicione estes métodos:
 
     @FXML
     private void handleGerenciarEquipes() {
@@ -317,6 +414,8 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.setTitle("Gerenciamento de Equipes");
             stage.setScene(new Scene(root, 800, 600));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tabelaProjetos.getScene().getWindow());
             stage.show();
 
         } catch (Exception e) {
@@ -325,25 +424,9 @@ public class DashboardController {
         }
     }
 
-    @FXML
-    private void handleNovaEquipe() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/equipe-form.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setTitle("Nova Equipe");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-
-        } catch (Exception e) {
-            showAlert("Erro", "Erro ao abrir formulário de equipe: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     public void atualizarListaProjetos() {
-        carregarProjetos(); // Simplesmente chama o método existente
+        carregarProjetos();
+        atualizarDashboard();
     }
 
     private void showAlert(String title, String message) {

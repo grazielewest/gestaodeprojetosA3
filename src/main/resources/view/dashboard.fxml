@@ -132,11 +132,11 @@
                     <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #f8f9fa; -fx-padding: 15px; -fx-background-radius: 8px;">
                         <Button text="➕ Novo Projeto" onAction="#handleNovoProjeto"
                                 style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 120px;"/>
-                        <Button text="✏️ Editar" onAction="#handleEditarProjeto"
+                        <Button text="Editar" onAction="#handleEditarProjeto"
                                 style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 100px;"/>
-                        <Button text="🗑️ Excluir" onAction="#handleExcluirProjeto"
+                        <Button text="Excluir" onAction="#handleExcluirProjeto"
                                 style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 100px;"/>
-                        <Button text="👁️ Visualizar" onAction="#handleVisualizarProjeto"
+                        <Button text="Visualizar" onAction="#handleVisualizarProjeto"
                                 style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 100px;"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <TextField promptText="Buscar projetos..." style="-fx-pref-width: 200px;"/>
@@ -151,7 +151,8 @@
                             <TableColumn fx:id="colStatus" text="Status" prefWidth="120"/>
                             <TableColumn fx:id="colDataInicio" text="Data Início" prefWidth="110"/>
                             <TableColumn fx:id="colDataFim" text="Data Fim" prefWidth="110"/>
-                            <TableColumn fx:id="colProgresso" text="Progresso" prefWidth="100"/>
+                            <TableColumn fx:id="colResponsável" text="Responsável" prefWidth="100"/>
+                            <TableColumn fx:id="colEquipes" text="Equipes" prefWidth="100"/>
                         </columns>
                     </TableView>
                 </VBox>
