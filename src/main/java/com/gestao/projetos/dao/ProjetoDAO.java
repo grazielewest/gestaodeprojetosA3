@@ -22,7 +22,16 @@ public class ProjetoDAO {
 
     // SQL statements
     private static final String INSERT_SQL = "INSERT INTO projetos (nome, descricao, status, data_inicio, data_fim, orcamento, id_responsavel, prioridade) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String SELECT_ALL_SQL = "SELECT p.*, u.nome as nome_responsavel FROM projetos p LEFT JOIN usuarios u ON p.id_responsavel = u.id ORDER BY p.id DESC";
+    private static final String SELECT_ALL_SQL =
+            "SELECT p.*, u.nome as nome_responsavel, " +
+                    "GROUP_CONCAT(DISTINCT e.nome SEPARATOR ', ') as nomes_equipes " +
+                    "FROM projetos p " +
+                    "LEFT JOIN usuarios u ON p.id_responsavel = u.id " +
+                    "LEFT JOIN equipe_projetos ep ON p.id = ep.projeto_id " +
+                    "LEFT JOIN equipes e ON ep.equipe_id = e.id " +
+                    "GROUP BY p.id, p.nome, p.descricao, p.status, p.data_inicio, p.data_fim, " +
+                    "p.orcamento, p.id_responsavel, p.prioridade, u.nome " +
+                    "ORDER BY p.id DESC";
     private static final String UPDATE_SQL = "UPDATE projetos SET nome = ?, descricao = ?, status = ?, data_inicio = ?, data_fim = ?, orcamento = ?, id_responsavel = ?, prioridade = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM projetos WHERE id = ?";
 
@@ -320,17 +329,29 @@ public class ProjetoDAO {
         projeto.setIdResponsavel(rs.getInt("id_responsavel"));
         projeto.setPrioridade(rs.getString("prioridade"));
 
-        // 🔥 Carregar nome do responsável se disponível
+        //  Carregar nome do responsável se disponível
         try {
             projeto.setNomeResponsavel(rs.getString("nome_responsavel"));
         } catch (SQLException e) {
             // Coluna pode não existir em todas as queries
         }
 
+        //  Carregar nomes das equipes
+        try {
+            String nomesEquipes = rs.getString("nomes_equipes");
+            projeto.setNomesEquipes(nomesEquipes != null ? nomesEquipes : "Sem equipes");
+        } catch (SQLException e) {
+            // Coluna pode não existir se o GROUP_CONCAT falhar
+            projeto.setNomesEquipes("Sem equipes");
+        }
+
+        //  IMPORTANTE: Inicializar a lista vazia para evitar null
+        projeto.setEquipes(new ArrayList<>());
+
         return projeto;
     }
 
-    // 🔥 NOVO MÉTODO: Buscar projetos por equipe
+    //  NOVO MÉTODO: Buscar projetos por equipe
     public List<Projeto> listarPorEquipe(int equipeId) {
         List<Projeto> projetos = new ArrayList<>();
         String sql = "SELECT p.* FROM projetos p INNER JOIN equipe_projetos ep ON p.id = ep.projeto_id WHERE ep.equipe_id = ?";

@@ -14,6 +14,7 @@ public class Projeto {
     private String status;
     private int idResponsavel;
     private String nomeResponsavel; // Para exibição na interface
+    private String nomesEquipes; // Para exibição na tabela
     private double orcamento;
     private String prioridade;
     private LocalDate dataCriacao;
@@ -28,7 +29,8 @@ public class Projeto {
         this.dataAtualizacao = LocalDate.now();
         this.status = "Planejamento";
         this.prioridade = "Média";
-        this.equipes = new ArrayList<>(); // 🔥 INICIALIZAR LISTA
+        this.equipes = new ArrayList<>();
+        this.nomesEquipes = "Sem equipes"; // 🔥 INICIALIZAR LISTA
     }
 
     public Projeto(String nome, String descricao, LocalDate dataInicio, LocalDate dataFim,
@@ -108,11 +110,36 @@ public class Projeto {
     }
 
     public String getNomeResponsavel() {
-        return nomeResponsavel;
+        return nomeResponsavel != null ? nomeResponsavel : "Não definido";
     }
 
     public void setNomeResponsavel(String nomeResponsavel) {
         this.nomeResponsavel = nomeResponsavel;
+    }
+
+    public String getNomesEquipes() {
+        // Primeiro tenta usar a string pré-formatada (para performance)
+        if (nomesEquipes != null && !nomesEquipes.equals("Sem equipes")) {
+            return nomesEquipes;
+        }
+
+        // Se não tiver a string, gera a partir da lista
+        if (equipes == null || equipes.isEmpty()) {
+            return "Sem equipes";
+        }
+
+        List<String> nomes = new ArrayList<>();
+        for (Equipe equipe : equipes) {
+            if (equipe.getNome() != null) {
+                nomes.add(equipe.getNome());
+            }
+        }
+
+        return nomes.isEmpty() ? "Sem equipes" : String.join(", ", nomes);
+    }
+
+    public void setNomesEquipes(String nomesEquipes) {
+        this.nomesEquipes = nomesEquipes;
     }
 
     public double getOrcamento() {
@@ -157,6 +184,24 @@ public class Projeto {
     public void setEquipes(List<Equipe> equipes) {
         this.equipes = equipes;
         this.dataAtualizacao = LocalDate.now();
+        atualizarNomesEquipes();
+    }
+
+    // 🔥 NOVO MÉTODO: Atualizar a string a partir da lista
+    private void atualizarNomesEquipes() {
+        if (equipes == null || equipes.isEmpty()) {
+            this.nomesEquipes = "Sem equipes";
+            return;
+        }
+
+        List<String> nomes = new ArrayList<>();
+        for (Equipe equipe : equipes) {
+            if (equipe.getNome() != null) {
+                nomes.add(equipe.getNome());
+            }
+        }
+
+        this.nomesEquipes = nomes.isEmpty() ? "Sem equipes" : String.join(", ", nomes);
     }
 
     // 🔥 MÉTODOS PARA MANIPULAR EQUIPES
@@ -167,6 +212,7 @@ public class Projeto {
         if (!this.equipes.contains(equipe)) {
             this.equipes.add(equipe);
             this.dataAtualizacao = LocalDate.now();
+            atualizarNomesEquipes();
         }
     }
 
@@ -174,6 +220,7 @@ public class Projeto {
         if (this.equipes != null) {
             this.equipes.remove(equipe);
             this.dataAtualizacao = LocalDate.now();
+            atualizarNomesEquipes();
         }
     }
 
@@ -181,23 +228,10 @@ public class Projeto {
         if (this.equipes != null) {
             this.equipes.clear();
             this.dataAtualizacao = LocalDate.now();
+            atualizarNomesEquipes();
         }
     }
 
-    // 🔥 MÉTODOS ÚTEIS PARA A INTERFACE
-    public String getNomesEquipes() {
-        if (equipes == null || equipes.isEmpty()) {
-            return "Nenhuma equipe";
-        }
-
-        List<String> nomes = new ArrayList<>();
-        for (Equipe equipe : equipes) {
-            if (equipe.getNome() != null) {
-                nomes.add(equipe.getNome());
-            }
-        }
-        return String.join(", ", nomes);
-    }
 
     public int getQuantidadeEquipes() {
         return equipes != null ? equipes.size() : 0;
@@ -206,6 +240,8 @@ public class Projeto {
     public boolean temEquipe(Equipe equipe) {
         return equipes != null && equipes.contains(equipe);
     }
+
+
 
     // Métodos auxiliares
     public String getDataInicioFormatada() {
@@ -278,19 +314,21 @@ public class Projeto {
         return String.format("R$ %.2f", orcamento);
     }
 
-    // 🔥 NOVO MÉTODO: Para exibir equipes na tabela
+    // 🔥 METODO MELHORADO para exibição na tabela
     public String getEquipesDisplay() {
         int quantidade = getQuantidadeEquipes();
         if (quantidade == 0) {
             return "Sem equipes";
         } else if (quantidade == 1) {
-            return "1 equipe";
+            Equipe equipe = equipes.get(0);
+            return equipe.getNome() != null ? equipe.getNome() : "1 equipe";
         } else {
             return quantidade + " equipes";
         }
     }
 
-    // 🔥 NOVO MÉTODO: Para detalhes das equipes
+
+    // 🔥 NOVO METODO: Para detalhes das equipes
     public String getDetalhesEquipes() {
         if (equipes == null || equipes.isEmpty()) {
             return "Nenhuma equipe atribuída";
