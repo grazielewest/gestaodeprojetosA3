@@ -2,6 +2,8 @@ package com.gestao.projetos.model.entity;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Projeto {
     private int id;
@@ -17,12 +19,16 @@ public class Projeto {
     private LocalDate dataCriacao;
     private LocalDate dataAtualizacao;
 
+    // 🔥 NOVOS ATRIBUTOS: Relação com equipes
+    private List<Equipe> equipes;
+
     // Construtores
     public Projeto() {
         this.dataCriacao = LocalDate.now();
         this.dataAtualizacao = LocalDate.now();
         this.status = "Planejamento";
         this.prioridade = "Média";
+        this.equipes = new ArrayList<>(); // 🔥 INICIALIZAR LISTA
     }
 
     public Projeto(String nome, String descricao, LocalDate dataInicio, LocalDate dataFim,
@@ -143,6 +149,64 @@ public class Projeto {
         this.dataAtualizacao = dataAtualizacao;
     }
 
+    // 🔥 NOVOS GETTERS/SETTERS PARA EQUIPES
+    public List<Equipe> getEquipes() {
+        return equipes;
+    }
+
+    public void setEquipes(List<Equipe> equipes) {
+        this.equipes = equipes;
+        this.dataAtualizacao = LocalDate.now();
+    }
+
+    // 🔥 MÉTODOS PARA MANIPULAR EQUIPES
+    public void adicionarEquipe(Equipe equipe) {
+        if (this.equipes == null) {
+            this.equipes = new ArrayList<>();
+        }
+        if (!this.equipes.contains(equipe)) {
+            this.equipes.add(equipe);
+            this.dataAtualizacao = LocalDate.now();
+        }
+    }
+
+    public void removerEquipe(Equipe equipe) {
+        if (this.equipes != null) {
+            this.equipes.remove(equipe);
+            this.dataAtualizacao = LocalDate.now();
+        }
+    }
+
+    public void limparEquipes() {
+        if (this.equipes != null) {
+            this.equipes.clear();
+            this.dataAtualizacao = LocalDate.now();
+        }
+    }
+
+    // 🔥 MÉTODOS ÚTEIS PARA A INTERFACE
+    public String getNomesEquipes() {
+        if (equipes == null || equipes.isEmpty()) {
+            return "Nenhuma equipe";
+        }
+
+        List<String> nomes = new ArrayList<>();
+        for (Equipe equipe : equipes) {
+            if (equipe.getNome() != null) {
+                nomes.add(equipe.getNome());
+            }
+        }
+        return String.join(", ", nomes);
+    }
+
+    public int getQuantidadeEquipes() {
+        return equipes != null ? equipes.size() : 0;
+    }
+
+    public boolean temEquipe(Equipe equipe) {
+        return equipes != null && equipes.contains(equipe);
+    }
+
     // Métodos auxiliares
     public String getDataInicioFormatada() {
         if (dataInicio != null) {
@@ -214,13 +278,40 @@ public class Projeto {
         return String.format("R$ %.2f", orcamento);
     }
 
-    // toString para debug
+    // 🔥 NOVO MÉTODO: Para exibir equipes na tabela
+    public String getEquipesDisplay() {
+        int quantidade = getQuantidadeEquipes();
+        if (quantidade == 0) {
+            return "Sem equipes";
+        } else if (quantidade == 1) {
+            return "1 equipe";
+        } else {
+            return quantidade + " equipes";
+        }
+    }
+
+    // 🔥 NOVO MÉTODO: Para detalhes das equipes
+    public String getDetalhesEquipes() {
+        if (equipes == null || equipes.isEmpty()) {
+            return "Nenhuma equipe atribuída";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < equipes.size(); i++) {
+            if (i > 0) sb.append("\n");
+            sb.append("• ").append(equipes.get(i).getNome());
+        }
+        return sb.toString();
+    }
+
+    // toString para debug (atualizado)
     @Override
     public String toString() {
         return "Projeto{" +
                 "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", status='" + status + '\'' +
+                ", equipes=" + getQuantidadeEquipes() +
                 ", dataInicio=" + getDataInicioFormatada() +
                 ", dataFim=" + getDataFimFormatada() +
                 '}';

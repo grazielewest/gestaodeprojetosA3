@@ -1,12 +1,17 @@
 package Controller;
 
+import com.gestao.projetos.dao.EquipeDAO;
 import com.gestao.projetos.dao.ProjetoDAO;
 import com.gestao.projetos.dao.UsuarioDAO;
+import com.gestao.projetos.model.entity.Equipe;
 import com.gestao.projetos.model.entity.Projeto;
 import com.gestao.projetos.model.entity.Usuario;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,7 +29,11 @@ public class ProjetoFormController {
     @FXML private Button btnSalvar;
     @FXML private Button btnCancelar;
     @FXML private Label lblTitulo;
+    @FXML private ListView<Equipe> listViewEquipes;
+    @FXML private Label lblTotalEquipes;
 
+    private ObservableList<Equipe> equipesList;
+    private EquipeDAO equipeDAO;
     private Projeto projeto;
     private ProjetoDAO projetoDAO;
     private UsuarioDAO usuarioDAO;
@@ -35,16 +44,28 @@ public class ProjetoFormController {
     private void initialize() {
         System.out.println("🔄 Inicializando ProjetoFormController...");
 
-        // Debug: verificar se os componentes foram injetados
-        System.out.println("btnSalvar é null? " + (btnSalvar == null));
-        System.out.println("btnCancelar é null? " + (btnCancelar == null));
-        System.out.println("txtNome é null? " + (txtNome == null));
-        System.out.println("cbStatus é null? " + (cbStatus == null));
-
+        // Inicializar DAOs
         projetoDAO = new ProjetoDAO();
         usuarioDAO = new UsuarioDAO();
+        equipeDAO = new EquipeDAO();
+        equipesList = FXCollections.observableArrayList();
+
+        // Configurar componentes
         configurarComponentes();
         carregarDados();
+
+        // Configurar lista de equipes
+        if (listViewEquipes != null) {
+            listViewEquipes.setItems(equipesList);
+            configurarCellFactoryEquipes();
+        }
+
+        atualizarTotalEquipes();
+
+        // Debug: verificar se os componentes foram injetados
+        System.out.println("btnSalvar é null? " + (btnSalvar == null));
+        System.out.println("listViewEquipes é null? " + (listViewEquipes == null));
+        System.out.println("lblTotalEquipes é null? " + (lblTotalEquipes == null));
     }
 
     private void configurarComponentes() {
@@ -73,6 +94,123 @@ public class ProjetoFormController {
         adicionarListenersValidacao();
     }
 
+    private void configurarCellFactoryEquipes() {
+        listViewEquipes.setCellFactory(new Callback<ListView<Equipe>, ListCell<Equipe>>() {
+            @Override
+            public ListCell<Equipe> call(ListView<Equipe> param) {
+                return new ListCell<Equipe>() {
+                    @Override
+                    protected void updateItem(Equipe equipe, boolean empty) {
+                        super.updateItem(equipe, empty);
+                        if (empty || equipe == null) {
+                            setText(null);
+                            setGraphic(null);
+                        } else {
+                            setText(equipe.getNome() + " (" + equipe.getQuantidadeMembros() + " membros)");
+
+                            Button btnRemover = new Button("✕");
+                            btnRemover.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 10px;");
+                            btnRemover.setOnAction(event -> removerEquipe(equipe));
+
+                            setGraphic(btnRemover);
+                        }
+                    }
+                };
+            }
+        });
+    }
+
+    @FXML
+    private void handleAdicionarEquipes() {
+        try {
+            // Carregar todas as equipes disponíveis
+            List<Equipe> todasEquipes = equipeDAO.listarTodos();
+            ObservableList<Equipe> equipesDisponiveis = FXCollections.observableArrayList(todasEquipes);
+
+            // Remover equipes já adicionadas
+            equipesDisponiveis.removeAll(equipesList);
+
+            if (equipesDisponiveis.isEmpty()) {
+                mostrarAlerta("Informação", "Todas as equipes já estão neste projeto.");
+                return;
+            }
+
+            // Criar diálogo de seleção
+            Dialog<Equipe> dialog = criarDialogoSelecaoEquipes("Selecionar Equipe", "Escolha uma equipe para adicionar ao projeto:", equipesDisponiveis);
+
+            dialog.showAndWait().ifPresent(equipeSelecionada -> {
+                if (equipeSelecionada != null && !equipesList.contains(equipeSelecionada)) {
+                    equipesList.add(equipeSelecionada);
+                    atualizarTotalEquipes();
+                }
+            });
+
+        } catch (Exception e) {
+            mostrarAlerta("Erro", "Erro ao carregar equipes: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private Dialog<Equipe> criarDialogoSelecaoEquipes(String titulo, String cabecalho, ObservableList<Equipe> equipes) {
+        Dialog<Equipe> dialog = new Dialog<>();
+        dialog.setTitle(titulo);
+        dialog.setHeaderText(cabecalho);
+
+        ButtonType confirmarButtonType = new ButtonType("Selecionar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(confirmarButtonType, ButtonType.CANCEL);
+
+        ListView<Equipe> listView = new ListView<>(equipes);
+        listView.setPrefSize(400, 300);
+
+        listView.setCellFactory(new Callback<ListView<Equipe>, ListCell<Equipe>>() {
+            @Override
+            public ListCell<Equipe> call(ListView<Equipe> param) {
+                return new ListCell<Equipe>() {
+                    @Override
+                    protected void updateItem(Equipe equipe, boolean empty) {
+                        super.updateItem(equipe, empty);
+                        if (empty || equipe == null) {
+                            setText(null);
+                        } else {
+                            setText(equipe.getNome() + " (" + equipe.getQuantidadeMembros() + " membros)");
+                        }
+                    }
+                };
+            }
+        });
+
+        dialog.getDialogPane().setContent(listView);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == confirmarButtonType) {
+                return listView.getSelectionModel().getSelectedItem();
+            }
+            return null;
+        });
+
+        return dialog;
+    }
+
+    private void removerEquipe(Equipe equipe) {
+        Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacao.setTitle("Confirmar Remoção");
+        confirmacao.setHeaderText("Remover Equipe");
+        confirmacao.setContentText("Tem certeza que deseja remover " + equipe.getNome() + " do projeto?");
+
+        confirmacao.showAndWait().ifPresent(resposta -> {
+            if (resposta == ButtonType.OK) {
+                equipesList.remove(equipe);
+                atualizarTotalEquipes();
+            }
+        });
+    }
+
+    private void atualizarTotalEquipes() {
+        if (lblTotalEquipes != null) {
+            lblTotalEquipes.setText("Total de equipes: " + equipesList.size());
+        }
+    }
+
     private void adicionarListenersValidacao() {
         dpDataInicio.valueProperty().addListener((observable, oldValue, newValue) -> {
             validarDatas();
@@ -93,7 +231,7 @@ public class ProjetoFormController {
 
             // ✅ CORRETO: Adicionar objetos Usuario completos
             for (Usuario usuario : usuarios) {
-                cbResponsavel.getItems().add(usuario); // ← Adiciona o objeto Usuario, não apenas o nome
+                cbResponsavel.getItems().add(usuario);
             }
 
             // ✅ Configurar para mostrar apenas o nome no ComboBox
@@ -104,12 +242,11 @@ public class ProjetoFormController {
                     if (empty || usuario == null) {
                         setText(null);
                     } else {
-                        setText(usuario.getNome()); // ← Mostra apenas o nome
+                        setText(usuario.getNome());
                     }
                 }
             });
 
-            // ✅ Configurar o texto do botão do ComboBox
             cbResponsavel.setButtonCell(new ListCell<Usuario>() {
                 @Override
                 protected void updateItem(Usuario usuario, boolean empty) {
@@ -117,7 +254,7 @@ public class ProjetoFormController {
                     if (empty || usuario == null) {
                         setText(null);
                     } else {
-                        setText(usuario.getNome()); // ← Mostra apenas o nome
+                        setText(usuario.getNome());
                     }
                 }
             });
@@ -133,7 +270,7 @@ public class ProjetoFormController {
             mostrarAlerta("Erro", "Erro ao carregar usuários: " + e.getMessage());
         }
     }
-    // ✅ VERSÃO QUE REMOVE INTERAÇÃO MAS MANTÉM VISÍVEL
+
     public void configurarModoVisualizacao() {
         System.out.println("🔒 Configurando modo visualização (sem interação)");
 
@@ -144,8 +281,8 @@ public class ProjetoFormController {
 
         // Para DatePickers: desabilitar mas manter valor visível
         dpDataInicio.setDisable(true);
-        dpDataInicio.setMouseTransparent(true); // Ignora cliques do mouse
-        dpDataInicio.setFocusTraversable(false); // Não pode receber foco
+        dpDataInicio.setMouseTransparent(true);
+        dpDataInicio.setFocusTraversable(false);
 
         dpDataFim.setDisable(true);
         dpDataFim.setMouseTransparent(true);
@@ -155,7 +292,7 @@ public class ProjetoFormController {
         cbStatus.setDisable(true);
         cbStatus.setMouseTransparent(true);
         cbStatus.setFocusTraversable(false);
-        cbStatus.setOpacity(1.0); // Importante: não deixar esmaecido
+        cbStatus.setOpacity(1.0);
 
         cbResponsavel.setDisable(true);
         cbResponsavel.setMouseTransparent(true);
@@ -182,7 +319,15 @@ public class ProjetoFormController {
         this.projeto = projeto;
         this.modoEdicao = true;
         preencherFormulario();
-        lblTitulo.setText("Editar Projeto - " + projeto.getNome());
+        if (lblTitulo != null) {
+            lblTitulo.setText("Editar Projeto - " + projeto.getNome());
+        }
+
+        // 🔥 CARREGAR EQUIPES DO PROJETO
+        if (projeto.getEquipes() != null) {
+            equipesList.setAll(projeto.getEquipes());
+            atualizarTotalEquipes();
+        }
     }
 
     public void setDashboardController(DashboardController dashboardController) {
@@ -193,11 +338,8 @@ public class ProjetoFormController {
         if (projeto != null) {
             txtNome.setText(projeto.getNome());
             txtDescricao.setText(projeto.getDescricao());
-
-            // Já é LocalDate - não precisa converter!
             dpDataInicio.setValue(projeto.getDataInicio());
             dpDataFim.setValue(projeto.getDataFim());
-
             cbStatus.setValue(projeto.getStatus());
 
             if (projeto.getOrcamento() > 0) {
@@ -225,6 +367,9 @@ public class ProjetoFormController {
                 Projeto projetoSalvar = modoEdicao ? projeto : new Projeto();
                 atualizarProjetoFromForm(projetoSalvar);
 
+                // 🔥 ADICIONAR EQUIPES AO PROJETO
+                projetoSalvar.setEquipes(new java.util.ArrayList<>(equipesList));
+
                 boolean sucesso;
                 if (modoEdicao) {
                     sucesso = projetoDAO.atualizar(projetoSalvar);
@@ -237,7 +382,12 @@ public class ProjetoFormController {
                             modoEdicao ? "Projeto atualizado com sucesso!" : "Projeto criado com sucesso!");
 
                     if (dashboardController != null) {
-                        dashboardController.atualizarListaProjetos();
+                        // Tenta chamar carregarProjetos() se existir
+                        try {
+                            dashboardController.getClass().getMethod("carregarProjetos").invoke(dashboardController);
+                        } catch (Exception e) {
+                            System.out.println("⚠️ Método carregarProjetos não encontrado, continuando...");
+                        }
                     }
 
                     fecharJanela();
@@ -260,7 +410,6 @@ public class ProjetoFormController {
     private boolean validarFormulario() {
         boolean valido = true;
 
-        // Validar nome
         if (txtNome.getText().trim().isEmpty()) {
             mostrarErro(txtNome, "Nome do projeto é obrigatório.");
             valido = false;
@@ -268,7 +417,6 @@ public class ProjetoFormController {
             removerErro(txtNome);
         }
 
-        // Validar datas
         if (dpDataInicio.getValue() == null) {
             mostrarErro(dpDataInicio, "Data de início é obrigatória.");
             valido = false;
@@ -292,7 +440,6 @@ public class ProjetoFormController {
             }
         }
 
-        // Validar responsável
         if (cbResponsavel.getSelectionModel().getSelectedItem() == null) {
             mostrarErro(cbResponsavel, "Selecione um responsável.");
             valido = false;
@@ -300,7 +447,6 @@ public class ProjetoFormController {
             removerErro(cbResponsavel);
         }
 
-        // Validar orçamento
         if (txtOrcamento.getText().isEmpty()) {
             mostrarErro(txtOrcamento, "Orçamento é obrigatório.");
             valido = false;
@@ -339,7 +485,6 @@ public class ProjetoFormController {
         projeto.setDataFim(dpDataFim.getValue());
         projeto.setStatus(cbStatus.getValue());
 
-        // ✅ Buscar ID do usuário pelo nome selecionado
         Usuario responsavel = cbResponsavel.getSelectionModel().getSelectedItem();
         if (responsavel != null) {
             projeto.setIdResponsavel(responsavel.getId());

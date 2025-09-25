@@ -270,9 +270,6 @@ public class DashboardController {
         }
     }
 
-    public void atualizarListaProjetos() {
-        carregarProjetos();
-    }
 
     // No DashboardController.java - método corrigido
     @FXML
@@ -343,6 +340,10 @@ public class DashboardController {
             showAlert("Erro", "Erro ao abrir formulário de equipe: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void atualizarListaProjetos() {
+        carregarProjetos(); // Simplesmente chama o método existente
     }
 
     private void showAlert(String title, String message) {

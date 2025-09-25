@@ -7,12 +7,22 @@ import com.gestao.projetos.model.entity.Usuario;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EquipeDAO {
     private static final Logger logger = Logger.getLogger(EquipeDAO.class.getName());
+
+    // Controle de recursão
+    private static final ThreadLocal<Set<Integer>> equipesEmCarregamento =
+            ThreadLocal.withInitial(HashSet::new);
+
+    // SQL statements
+    private static final String SELECT_BY_ID = "SELECT e.* FROM equipes e WHERE e.id = ?";
+    private static final String SELECT_PROJETOS_EQUIPE = "SELECT p.* FROM projetos p INNER JOIN equipe_projetos ep ON p.id = ep.projeto_id WHERE ep.equipe_id = ?";
 
     public void criarTabela() {
         // Tabela principal de equipes
@@ -138,24 +148,57 @@ public class EquipeDAO {
         return equipes;
     }
 
+    // 🔥 MÉTODO PRINCIPAL MODIFICADO
     public Equipe buscarPorId(int id) {
-        String sql = "SELECT * FROM equipes WHERE id = ?";
+        Set<Integer> emCarregamento = equipesEmCarregamento.get();
+        if (emCarregamento.contains(id)) {
+            logger.log(Level.WARNING, "⚠️ Tentativa de carregamento recursivo da equipe ID: " + id);
+            return buscarBasicoPorId(id);
+        }
 
+        try {
+            emCarregamento.add(id);
+
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID)) {
+
+                stmt.setInt(1, id);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    Equipe equipe = mapearResultSetParaEquipe(rs);
+                    carregarProjetos(equipe, conn);
+                    carregarMembros(equipe, conn);
+                    return equipe;
+                }
+
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "❌ Erro ao buscar equipe por ID", e);
+            }
+            return null;
+
+        } finally {
+            emCarregamento.remove(id);
+        }
+    }
+
+    // 🔥 NOVO MÉTODO: Buscar apenas dados básicos (sem projetos)
+    public Equipe buscarBasicoPorId(int id) {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID)) {
 
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 Equipe equipe = mapearResultSetParaEquipe(rs);
-                carregarMembros(equipe, conn);
-                carregarProjetos(equipe, conn);
+                // 🔥 Não carrega projetos para evitar recursão
+                equipe.setProjetos(new ArrayList<>());
                 return equipe;
             }
 
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "❌ Erro ao buscar equipe por ID", e);
+            logger.log(Level.SEVERE, "❌ Erro ao buscar equipe básica por ID", e);
         }
         return null;
     }
@@ -240,20 +283,20 @@ public class EquipeDAO {
     }
 
     private void carregarProjetos(Equipe equipe, Connection conn) throws SQLException {
-        String sql = "SELECT p.* FROM projetos p " +
-                "INNER JOIN equipe_projetos ep ON p.id = ep.projeto_id " +
-                "WHERE ep.equipe_id = ?";
+        List<Projeto> projetos = new ArrayList<>();
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(SELECT_PROJETOS_EQUIPE)) {
             stmt.setInt(1, equipe.getId());
             ResultSet rs = stmt.executeQuery();
 
-            ProjetoDAO projetoDAO = new ProjetoDAO();
             while (rs.next()) {
-                equipe.adicionarProjeto(projetoDAO.buscarPorId(rs.getInt("id")));
+                Projeto projeto = ProjetoMapper.mapearBasico(rs);
+                projetos.add(projeto);
             }
         }
+        equipe.setProjetos(projetos);
     }
+
 
     private void atualizarMembros(Equipe equipe, Connection conn) throws SQLException {
         // Remover todos os membros atuais

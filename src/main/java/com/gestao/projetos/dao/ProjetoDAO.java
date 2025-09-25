@@ -2,24 +2,35 @@ package com.gestao.projetos.dao;
 
 import database.DatabaseConnection;
 import com.gestao.projetos.model.entity.Projeto;
+import com.gestao.projetos.model.entity.Equipe;
+import com.gestao.projetos.model.entity.Usuario;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ProjetoDAO {
     private static final Logger logger = Logger.getLogger(ProjetoDAO.class.getName());
 
-    // SQL statements - CORRETOS para sua estrutura
+    // Adicione esta variável para controlar a recursão
+    private static final ThreadLocal<Set<Integer>> projetosEmCarregamento =
+            ThreadLocal.withInitial(HashSet::new);
+
+    // SQL statements
     private static final String INSERT_SQL = "INSERT INTO projetos (nome, descricao, status, data_inicio, data_fim, orcamento, id_responsavel, prioridade) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    // No ProjetoDAO.java - Corrigir a query
-    private static final String SELECT_ALL_SQL = "SELECT * FROM projetos ORDER BY id DESC";
+    private static final String SELECT_ALL_SQL = "SELECT p.*, u.nome as nome_responsavel FROM projetos p LEFT JOIN usuarios u ON p.id_responsavel = u.id ORDER BY p.id DESC";
     private static final String UPDATE_SQL = "UPDATE projetos SET nome = ?, descricao = ?, status = ?, data_inicio = ?, data_fim = ?, orcamento = ?, id_responsavel = ?, prioridade = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM projetos WHERE id = ?";
 
-    // ✅ METODO ADICIONADO: Criar tabela de projetos
+    // 🔥 NOVOS SQLs para gerenciar equipes
+    private static final String INSERT_EQUIPE_PROJETO = "INSERT INTO equipe_projetos (equipe_id, projeto_id) VALUES (?, ?)";
+    private static final String DELETE_EQUIPES_PROJETO = "DELETE FROM equipe_projetos WHERE projeto_id = ?";
+    private static final String SELECT_EQUIPES_PROJETO = "SELECT e.* FROM equipes e INNER JOIN equipe_projetos ep ON e.id = ep.equipe_id WHERE ep.projeto_id = ?";
+
     public void criarTabela() {
         String sql = "CREATE TABLE IF NOT EXISTS projetos (" +
                 "id INT PRIMARY KEY AUTO_INCREMENT, " +
@@ -36,48 +47,74 @@ public class ProjetoDAO {
                 "FOREIGN KEY (id_responsavel) REFERENCES usuarios(id) ON DELETE SET NULL" +
                 ")";
 
+        // 🔥 Tabela de relacionamento (já deve existir da EquipeDAO)
+        String sqlEquipeProjetos = "CREATE TABLE IF NOT EXISTS equipe_projetos (" +
+                "id INT PRIMARY KEY AUTO_INCREMENT, " +
+                "equipe_id INT NOT NULL, " +
+                "projeto_id INT NOT NULL, " +
+                "data_vinculo TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY (equipe_id) REFERENCES equipes(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY (projeto_id) REFERENCES projetos(id) ON DELETE CASCADE, " +
+                "UNIQUE KEY unique_equipe_projeto (equipe_id, projeto_id)" +
+                ")";
+
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(sql);
-            logger.log(Level.INFO, "✅ Tabela de projetos criada/verificada");
+            stmt.execute(sqlEquipeProjetos);
+            logger.log(Level.INFO, "✅ Tabelas de projetos criadas/verificadas");
 
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "❌ Erro ao criar tabela de projetos", e);
-        }
-    }
-
-    // Seus métodos existentes continuam daqui...
-    // Adicione este metodo no ProjetoDAO para diagnosticar a tabela
-    public void verificarEstruturaTabela() {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet columns = metaData.getColumns(null, null, "projetos", null);
-
-            System.out.println("📋 Estrutura da tabela 'projetos':");
-            while (columns.next()) {
-                String columnName = columns.getString("COLUMN_NAME");
-                String columnType = columns.getString("TYPE_NAME");
-                System.out.println("• " + columnName + " (" + columnType + ")");
-            }
-
-        } catch (SQLException e) {
-            System.out.println("❌ Erro ao verificar estrutura da tabela: " + e.getMessage());
+            logger.log(Level.SEVERE, "❌ Erro ao criar tabelas de projetos", e);
         }
     }
 
     public boolean salvar(Projeto projeto) {
-        System.out.println("🔄 Tentando salvar projeto: " + projeto.getNome());
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false); // Iniciar transação
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            // Salvar projeto básico
+            boolean projetoSalvo = salvarProjetoBasico(projeto, conn);
+            if (!projetoSalvo) {
+                conn.rollback();
+                return false;
+            }
 
-            // Configurar parâmetros NA ORDEM CORRETA
+            // Salvar equipes do projeto
+            salvarEquipesProjeto(projeto, conn);
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                logger.log(Level.SEVERE, "Erro ao fazer rollback", ex);
+            }
+            logger.log(Level.SEVERE, "❌ Erro ao salvar projeto", e);
+            return false;
+        } finally {
+            try {
+                if (conn != null) conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Erro ao restaurar auto-commit", e);
+            }
+        }
+    }
+
+    private boolean salvarProjetoBasico(Projeto projeto, Connection conn) throws SQLException {
+        String sql = projeto.getId() == 0 ? INSERT_SQL : UPDATE_SQL;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             stmt.setString(1, projeto.getNome());
             stmt.setString(2, projeto.getDescricao());
             stmt.setString(3, projeto.getStatus());
 
-            // Datas - converter LocalDate para java.sql.Date
             if (projeto.getDataInicio() != null) {
                 stmt.setDate(4, java.sql.Date.valueOf(projeto.getDataInicio()));
             } else {
@@ -92,7 +129,6 @@ public class ProjetoDAO {
 
             stmt.setDouble(6, projeto.getOrcamento());
 
-            // Responsável - pode ser NULL
             if (projeto.getIdResponsavel() > 0) {
                 stmt.setInt(7, projeto.getIdResponsavel());
             } else {
@@ -101,179 +137,165 @@ public class ProjetoDAO {
 
             stmt.setString(8, projeto.getPrioridade());
 
-            System.out.println("📋 Executando SQL: " + stmt.toString());
+            if (projeto.getId() > 0) {
+                stmt.setInt(9, projeto.getId());
+            }
 
             int affectedRows = stmt.executeUpdate();
 
-            if (affectedRows > 0) {
+            if (affectedRows > 0 && projeto.getId() == 0) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         projeto.setId(generatedKeys.getInt(1));
-                        System.out.println("✅ Projeto salvo com ID: " + projeto.getId());
-                        return true;
                     }
                 }
             }
 
-            System.out.println("❌ Nenhuma linha afetada ao salvar projeto");
-            return false;
-
-        } catch (SQLException e) {
-            System.out.println("❌ Erro SQL ao salvar projeto: " + e.getMessage());
-            logger.log(Level.SEVERE, "Erro ao salvar projeto", e);
-            return false;
+            return affectedRows > 0;
         }
     }
 
-    // No ProjetoDAO.java - Método corrigido
-    public List<Projeto> listarTodos() {
-        System.out.println("🔄 Listando todos os projetos...");
-        List<Projeto> projetos = new ArrayList<>();
-
-        // Primeiro, verificar qual coluna de data existe
-        String orderByColumn = "id"; // padrão
-
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet columns = metaData.getColumns(null, null, "projetos", null);
-
-            while (columns.next()) {
-                String columnName = columns.getString("COLUMN_NAME");
-                if (columnName.equalsIgnoreCase("data_criacao") ||
-                        columnName.equalsIgnoreCase("created_at") ||
-                        columnName.equalsIgnoreCase("data_criacao")) {
-                    orderByColumn = columnName;
-                    break;
-                }
+    private void salvarEquipesProjeto(Projeto projeto, Connection conn) throws SQLException {
+        // Remover equipes atuais (apenas na atualização)
+        if (projeto.getId() > 0) {
+            try (PreparedStatement stmt = conn.prepareStatement(DELETE_EQUIPES_PROJETO)) {
+                stmt.setInt(1, projeto.getId());
+                stmt.executeUpdate();
             }
-        } catch (SQLException e) {
-            System.out.println("⚠️ Não foi possível detectar coluna de data, usando ordenação por ID");
         }
 
-        String sql = "SELECT * FROM projetos ORDER BY " + orderByColumn + " DESC";
-        System.out.println("📋 SQL de consulta: " + sql);
+        // Adicionar novas equipes
+        if (projeto.getEquipes() != null && !projeto.getEquipes().isEmpty()) {
+            try (PreparedStatement stmt = conn.prepareStatement(INSERT_EQUIPE_PROJETO)) {
+                for (Equipe equipe : projeto.getEquipes()) {
+                    stmt.setInt(1, equipe.getId());
+                    stmt.setInt(2, projeto.getId());
+                    stmt.addBatch();
+                }
+                stmt.executeBatch();
+            }
+        }
+    }
+
+    public List<Projeto> listarTodos() {
+        List<Projeto> projetos = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 Projeto projeto = mapearResultSetParaProjeto(rs);
+                carregarEquipesProjeto(projeto, conn);
                 projetos.add(projeto);
-                System.out.println("📋 Projeto encontrado: " + projeto.getNome() + " (ID: " + projeto.getId() + ")");
             }
 
-            System.out.println("✅ Total de projetos encontrados: " + projetos.size());
-
         } catch (SQLException e) {
-            System.out.println("❌ Erro ao listar projetos: " + e.getMessage());
-            logger.log(Level.SEVERE, "Erro ao listar projetos", e);
+            logger.log(Level.SEVERE, "❌ Erro ao listar projetos", e);
         }
         return projetos;
     }
 
-    // Adicione este método no ProjetoDAO
-    public void verificarECriarColunasFaltantes() {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            // Verificar se data_criacao existe
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet columns = metaData.getColumns(null, null, "projetos", "data_criacao");
+    public Projeto buscarPorId(int id) {
+        // Verificar se já estamos carregando este projeto (evitar recursão)
+        Set<Integer> emCarregamento = projetosEmCarregamento.get();
+        if (emCarregamento.contains(id)) {
+            logger.log(Level.WARNING, "⚠️ Tentativa de carregamento recursivo do projeto ID: " + id);
+            return criarProjetoBasico(id); // Retorna apenas dados básicos
+        }
 
-            if (!columns.next()) {
-                // Coluna não existe, criar ela
-                String sql = "ALTER TABLE projetos ADD COLUMN data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-                try (Statement stmt = conn.createStatement()) {
-                    stmt.execute(sql);
-                    System.out.println("✅ Coluna data_criacao criada com sucesso");
+        try {
+            emCarregamento.add(id); // Marcar como em carregamento
+
+            String sql = "SELECT p.*, u.nome as nome_responsavel FROM projetos p LEFT JOIN usuarios u ON p.id_responsavel = u.id WHERE p.id = ?";
+
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setInt(1, id);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    Projeto projeto = mapearResultSetParaProjeto(rs);
+                    carregarEquipesProjeto(projeto, conn);
+                    return projeto;
                 }
-            } else {
-                System.out.println("✅ Coluna data_criacao já existe");
-            }
 
-        } catch (SQLException e) {
-            System.out.println("❌ Erro ao verificar/criar colunas: " + e.getMessage());
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "❌ Erro ao buscar projeto por ID", e);
+            }
+            return null;
+
+        } finally {
+            emCarregamento.remove(id); // Remover após carregamento
         }
     }
 
-    public boolean atualizar(Projeto projeto) {
-        System.out.println("🔄 Atualizando projeto ID: " + projeto.getId());
+    // Método para carregar apenas dados básicos (sem recursão)
+    private Projeto criarProjetoBasico(int id) {
+        String sql = "SELECT p.*, u.nome as nome_responsavel FROM projetos p LEFT JOIN usuarios u ON p.id_responsavel = u.id WHERE p.id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
-
-            // Configurar parâmetros NA ORDEM CORRETA
-            stmt.setString(1, projeto.getNome());
-            stmt.setString(2, projeto.getDescricao());
-            stmt.setString(3, projeto.getStatus());
-
-            // Datas
-            if (projeto.getDataInicio() != null) {
-                stmt.setDate(4, java.sql.Date.valueOf(projeto.getDataInicio()));
-            } else {
-                stmt.setNull(4, Types.DATE);
-            }
-
-            if (projeto.getDataFim() != null) {
-                stmt.setDate(5, java.sql.Date.valueOf(projeto.getDataFim()));
-            } else {
-                stmt.setNull(5, Types.DATE);
-            }
-
-            stmt.setDouble(6, projeto.getOrcamento());
-
-            // Responsável
-            if (projeto.getIdResponsavel() > 0) {
-                stmt.setInt(7, projeto.getIdResponsavel());
-            } else {
-                stmt.setNull(7, Types.INTEGER);
-            }
-
-            stmt.setString(8, projeto.getPrioridade());
-            stmt.setInt(9, projeto.getId());
-
-            System.out.println("📋 Executando UPDATE: " + stmt.toString());
-
-            int affectedRows = stmt.executeUpdate();
-            boolean sucesso = affectedRows > 0;
-
-            if (sucesso) {
-                System.out.println("✅ Projeto atualizado com sucesso: " + projeto.getId());
-            } else {
-                System.out.println("❌ Nenhum projeto encontrado para atualizar: " + projeto.getId());
-            }
-
-            return sucesso;
-
-        } catch (SQLException e) {
-            System.out.println("❌ Erro ao atualizar projeto: " + e.getMessage());
-            logger.log(Level.SEVERE, "Erro ao atualizar projeto", e);
-            return false;
-        }
-    }
-
-    public boolean excluir(int id) {
-        System.out.println("🔄 Excluindo projeto ID: " + id);
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
-            int affectedRows = stmt.executeUpdate();
-            boolean sucesso = affectedRows > 0;
+            ResultSet rs = stmt.executeQuery();
 
-            if (sucesso) {
-                System.out.println("✅ Projeto excluído com sucesso: " + id);
-            } else {
-                System.out.println("❌ Nenhum projeto encontrado para excluir: " + id);
+            if (rs.next()) {
+                Projeto projeto = mapearResultSetParaProjeto(rs);
+                // Não carrega equipes para evitar recursão
+                projeto.setEquipes(new ArrayList<>());
+                return projeto;
             }
 
-            return sucesso;
-
         } catch (SQLException e) {
-            System.out.println("❌ Erro ao excluir projeto: " + e.getMessage());
-            logger.log(Level.SEVERE, "Erro ao excluir projeto", e);
-            return false;
+            logger.log(Level.SEVERE, "❌ Erro ao criar projeto básico", e);
         }
+        return null;
+    }
+
+    // 🔥 METODO MODIFICADO: Agora evita recursão
+    private void carregarEquipesProjeto(Projeto projeto, Connection conn) throws SQLException {
+        List<Equipe> equipes = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(SELECT_EQUIPES_PROJETO)) {
+            stmt.setInt(1, projeto.getId());
+            ResultSet rs = stmt.executeQuery();
+
+            // 🔥 MODIFICAÇÃO AQUI: Usar método que não carrega projetos da equipe
+            EquipeDAO equipeDAO = new EquipeDAO();
+            while (rs.next()) {
+                // 🔥 Usar novo método que não carrega projetos (evita recursão)
+                Equipe equipe = equipeDAO.buscarBasicoPorId(rs.getInt("id"));
+                if (equipe != null) {
+                    equipes.add(equipe);
+                }
+            }
+        }
+        projeto.setEquipes(equipes);
+    }
+
+    // 🔥 NOVO MÉTODO: Carregar equipes sem projetos (para uso do EquipeDAO)
+    public List<Equipe> carregarEquipesBasico(int projetoId) throws SQLException {
+        List<Equipe> equipes = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_EQUIPES_PROJETO)) {
+
+            stmt.setInt(1, projetoId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Equipe equipe = new Equipe();
+                equipe.setId(rs.getInt("id"));
+                equipe.setNome(rs.getString("nome"));
+                equipe.setDescricao(rs.getString("descricao"));
+                // 🔥 Não carrega projetos para evitar recursão
+                equipe.setProjetos(new ArrayList<>());
+                equipes.add(equipe);
+            }
+        }
+        return equipes;
     }
 
     private Projeto mapearResultSetParaProjeto(ResultSet rs) throws SQLException {
@@ -284,7 +306,6 @@ public class ProjetoDAO {
         projeto.setDescricao(rs.getString("descricao"));
         projeto.setStatus(rs.getString("status"));
 
-        // Converter java.sql.Date para LocalDate
         java.sql.Date dataInicio = rs.getDate("data_inicio");
         if (dataInicio != null) {
             projeto.setDataInicio(dataInicio.toLocalDate());
@@ -299,34 +320,54 @@ public class ProjetoDAO {
         projeto.setIdResponsavel(rs.getInt("id_responsavel"));
         projeto.setPrioridade(rs.getString("prioridade"));
 
+        // 🔥 Carregar nome do responsável se disponível
+        try {
+            projeto.setNomeResponsavel(rs.getString("nome_responsavel"));
+        } catch (SQLException e) {
+            // Coluna pode não existir em todas as queries
+        }
+
         return projeto;
     }
 
-    // Método adicional para buscar por ID
-    public Projeto buscarPorId(int id) {
-        System.out.println("🔍 Buscando projeto ID: " + id);
-
-        String sql = "SELECT * FROM projetos WHERE id = ?";
+    // 🔥 NOVO MÉTODO: Buscar projetos por equipe
+    public List<Projeto> listarPorEquipe(int equipeId) {
+        List<Projeto> projetos = new ArrayList<>();
+        String sql = "SELECT p.* FROM projetos p INNER JOIN equipe_projetos ep ON p.id = ep.projeto_id WHERE ep.equipe_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, id);
+            stmt.setInt(1, equipeId);
+            ResultSet rs = stmt.executeQuery();
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    System.out.println("✅ Projeto encontrado: " + id);
-                    return mapearResultSetParaProjeto(rs);
-                } else {
-                    System.out.println("❌ Projeto não encontrado: " + id);
-                    return null;
-                }
+            while (rs.next()) {
+                Projeto projeto = mapearResultSetParaProjeto(rs);
+                projetos.add(projeto);
             }
 
         } catch (SQLException e) {
-            System.out.println("❌ Erro ao buscar projeto: " + e.getMessage());
-            logger.log(Level.SEVERE, "Erro ao buscar projeto por ID", e);
-            return null;
+            logger.log(Level.SEVERE, "❌ Erro ao listar projetos por equipe", e);
+        }
+        return projetos;
+    }
+
+    // Mantenha os outros métodos existentes (atualizar, excluir, etc.)
+    public boolean atualizar(Projeto projeto) {
+        return salvar(projeto); // Já usa transação
+    }
+
+    public boolean excluir(int id) {
+        // A exclusão em cascata da tabela equipe_projetos será feita automaticamente
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
+
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "❌ Erro ao excluir projeto", e);
+            return false;
         }
     }
 }

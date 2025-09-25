@@ -7,49 +7,69 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Controller.ProjetoFormController"
+            prefWidth="600" prefHeight="700"
             style="-fx-padding: 20;">
 
-    <VBox spacing="15" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
-        <Label fx:id="lblTitulo" text="Novo Projeto" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    <ScrollPane fitToWidth="true">
+        <VBox spacing="15">
+            <Label fx:id="lblTitulo" text="Novo Projeto" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
-        <Text text="Formulário de Projeto" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <GridPane hgap="10" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints prefWidth="120"/>
+                    <ColumnConstraints prefWidth="400"/>
+                </columnConstraints>
 
-        <GridPane hgap="10" vgap="10">
-            <columnConstraints>
-                <ColumnConstraints prefWidth="100"/>
-                <ColumnConstraints prefWidth="300"/>
-            </columnConstraints>
+                <Label text="Nome:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtNome" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-            <!-- ✅ CORRIGIDO: Alterado para corresponder ao controller -->
-            <Label text="Nome:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtNome" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Descrição:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextArea fx:id="txtDescricao" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="3"/>
 
-            <Label text="Descrição:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <TextArea fx:id="txtDescricao" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="3"/>
+                <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="cbStatus" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-            <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbStatus" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label text="Data Início:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="dpDataInicio" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-            <Label text="Data Início:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="dpDataInicio" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <Label text="Data Fim:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="dpDataFim" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-            <Label text="Data Fim:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="dpDataFim" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Label text="Orçamento:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtOrcamento" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-            <Label text="Orçamento:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <TextField fx:id="txtOrcamento" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                <Label text="Responsável:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="cbResponsavel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
-            <!-- ✅ ADICIONE estes campos que faltam -->
-            <Label text="Responsável:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbResponsavel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                <Label text="Prioridade:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="cbPrioridade" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+            </GridPane>
 
-            <Label text="Prioridade:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbPrioridade" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
-        </GridPane>
+            <!-- 🔥 NOVA SEÇÃO: Seleção de Equipes -->
+            <VBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                <Label text="Equipes do Projeto:" style="-fx-font-weight: bold;"/>
 
-        <HBox spacing="10" style="-fx-padding: 20 0 0 0;">
-            <Button fx:id="btnSalvar" text="Salvar" onAction="#handleSalvar" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-pref-width: 100px;"/>
-            <Button fx:id="btnCancelar" text="Cancelar" onAction="#handleCancelar" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-pref-width: 100px;"/>
-        </HBox>
-    </VBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Selecionar equipes envolvidas no projeto:"/>
+                    <Button text="+ Adicionar Equipes" onAction="#handleAdicionarEquipes"
+                            style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 12px;"/>
+                </HBox>
+
+                <ListView fx:id="listViewEquipes" prefHeight="150">
+                    <placeholder>
+                        <Label text="Nenhuma equipe selecionada"/>
+                    </placeholder>
+                </ListView>
+
+                <Label fx:id="lblTotalEquipes" text="Total de equipes: 0" style="-fx-text-fill: #666;"/>
+            </VBox>
+
+            <HBox spacing="10" style="-fx-padding: 20 0 0 0;">
+                <Button fx:id="btnSalvar" text="Salvar" onAction="#handleSalvar"
+                        style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-pref-width: 100px;"/>
+                <Button fx:id="btnCancelar" text="Cancelar" onAction="#handleCancelar"
+                        style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-pref-width: 100px;"/>
+            </HBox>
+        </VBox>
+    </ScrollPane>
 </AnchorPane>
