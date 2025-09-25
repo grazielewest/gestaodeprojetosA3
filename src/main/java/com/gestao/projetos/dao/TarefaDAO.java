@@ -21,6 +21,37 @@ public class TarefaDAO {
         }
     }
 
+    public void criarTabela() {
+        String sql = "CREATE TABLE IF NOT EXISTS tarefas (" +
+                "id INT PRIMARY KEY AUTO_INCREMENT, " +
+                "titulo VARCHAR(200) NOT NULL, " +
+                "descricao TEXT, " +
+                "id_projeto INT NOT NULL, " +
+                "id_responsavel INT NOT NULL, " +
+                "status VARCHAR(20) DEFAULT 'Pendente', " +
+                "data_inicio_prevista DATE, " +
+                "data_fim_prevista DATE, " +
+                "data_inicio_real DATE, " +
+                "data_fim_real DATE, " +
+                "prioridade VARCHAR(20) DEFAULT 'Média', " +
+                "data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY (id_projeto) REFERENCES projetos(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY (id_responsavel) REFERENCES usuarios(id) ON DELETE RESTRICT" +
+                ")";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.execute(sql);
+            System.out.println("✅ Tabela de tarefas criada/verificada com sucesso!");
+
+        } catch (SQLException e) {
+            System.out.println("❌ Erro ao criar tabela de tarefas: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public boolean salvar(Tarefa tarefa) {
         String sql = tarefa.getId() == 0 ?
                 "INSERT INTO tarefas (titulo, descricao, id_projeto, id_responsavel, status, data_inicio_prevista, data_fim_prevista, data_inicio_real, data_fim_real, prioridade) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" :

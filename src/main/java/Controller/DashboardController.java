@@ -1,7 +1,10 @@
 package Controller;
 
 import com.gestao.projetos.dao.ProjetoDAO;
+import com.gestao.projetos.dao.TarefaDAO;
 import com.gestao.projetos.model.entity.Projeto;
+import com.gestao.projetos.model.entity.Tarefa;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,6 +15,8 @@ import javafx.stage.Stage;
 import javafx.stage.Modality;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import javafx.scene.control.TableCell;
@@ -20,25 +25,18 @@ public class DashboardController {
 
     @FXML
     private TableView<Projeto> tabelaProjetos;
-
     @FXML
     private TableColumn<Projeto, Integer> colId;
-
     @FXML
     private TableColumn<Projeto, String> colNome;
-
     @FXML
     private TableColumn<Projeto, String> colStatus;
-
     @FXML
     private TableColumn<Projeto, String> colDataInicio;
-
     @FXML
     private TableColumn<Projeto, String> colDataFim;
-
     @FXML
     private TableColumn<Projeto, String> colResponsavel;
-
     @FXML
     private TableColumn<Projeto, String> colEquipes;
 
@@ -58,19 +56,325 @@ public class DashboardController {
     @FXML
     private Label lblStatus;
 
+    @FXML private TableView<Tarefa> tabelaTarefas;
+    @FXML private TableColumn<Tarefa, Integer> colTarefaId;
+    @FXML private TableColumn<Tarefa, String> colTarefaTitulo;
+    @FXML private TableColumn<Tarefa, String> colTarefaProjeto;
+    @FXML private TableColumn<Tarefa, String> colTarefaResponsavel;
+    @FXML private TableColumn<Tarefa, String> colTarefaStatus;
+    @FXML private TableColumn<Tarefa, String> colTarefaPrioridade;
+    @FXML private TableColumn<Tarefa, String> colTarefaInicioPrevisto;
+    @FXML private TableColumn<Tarefa, String> colTarefaFimPrevisto;
+    @FXML private TableColumn<Tarefa, String> colTarefaAtraso;
+
+    @FXML private ComboBox<Projeto> cbFiltroProjetos;
+    @FXML private ComboBox<String> cbFiltroStatus;
+    @FXML private Label lblTotalTarefas;
+    @FXML private Label lblTarefasAtrasadas;
+
     private ProjetoDAO projetoDAO;
     private ObservableList<Projeto> projetosList;
 
+    private TarefaDAO tarefaDAO;
+    private ObservableList<Tarefa> tarefasList;
+
     @FXML
-    private void initialize() {
-        projetoDAO = new ProjetoDAO();
-        configurarTabela();
-        carregarProjetos();
-        atualizarDashboard();
-        configurarLabels();
+    private void initialize() { // ✅ CORREÇÃO: Adicionei a chave de abertura aqui
+        try {
+            projetoDAO = new ProjetoDAO();
+            tarefaDAO = new TarefaDAO();
+
+            configurarTabelaProjetos();
+            configurarTabelaTarefas();
+            carregarProjetos();
+            carregarTarefas();
+            atualizarDashboard();
+            configurarLabels();
+            System.out.println("✅ DashboardController inicializado com sucesso!");
+        } catch (Exception e) {
+            System.out.println("❌ Erro na inicialização: " + e.getMessage());
+            e.printStackTrace();
+        }
+    } // ✅ CORREÇÃO: Chave de fechamento do método initialize()
+
+    // 🔥 NOVO MÉTODO: Configurar tabela de tarefas
+    private void configurarTabelaTarefas() {
+        try {
+            System.out.println("🔄 Configurando tabela de tarefas...");
+
+            colTarefaId.setCellValueFactory(new PropertyValueFactory<>("id"));
+            colTarefaTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+            colTarefaProjeto.setCellValueFactory(cellData -> {
+                Tarefa tarefa = cellData.getValue();
+                return new SimpleStringProperty(tarefa.getNomeProjeto());
+            });
+            colTarefaResponsavel.setCellValueFactory(cellData -> {
+                Tarefa tarefa = cellData.getValue();
+                return new SimpleStringProperty(tarefa.getNomeResponsavel());
+            });
+            colTarefaStatus.setCellValueFactory(new PropertyValueFactory<>("statusDisplay"));
+            colTarefaPrioridade.setCellValueFactory(new PropertyValueFactory<>("prioridade"));
+            colTarefaInicioPrevisto.setCellValueFactory(new PropertyValueFactory<>("dataInicioPrevistaFormatada"));
+            colTarefaFimPrevisto.setCellValueFactory(new PropertyValueFactory<>("dataFimPrevistaFormatada"));
+
+            colTarefaAtraso.setCellValueFactory(cellData -> {
+                Tarefa tarefa = cellData.getValue();
+                String situacao = tarefa.estaAtrasada() ? "🚨 Atrasada" : "✅ No prazo";
+                return new SimpleStringProperty(situacao);
+            });
+
+            // Formatação de cores para status
+            colTarefaStatus.setCellFactory(column -> new TableCell<Tarefa, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                        setStyle("");
+                    } else {
+                        setText(item.replace("⏳ ", "").replace("🚀 ", "").replace("✅ ", "").replace("❌ ", ""));
+                        Tarefa tarefa = getTableView().getItems().get(getIndex());
+                        if (tarefa.estaAtrasada()) {
+                            setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+                        } else if ("Concluída".equals(tarefa.getStatus())) {
+                            setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                        } else if ("Em Execução".equals(tarefa.getStatus())) {
+                            setStyle("-fx-text-fill: #007bff; -fx-font-weight: bold;");
+                        } else {
+                            setStyle("-fx-text-fill: #6c757d;");
+                        }
+                    }
+                }
+            });
+
+            colTarefaAtraso.setCellFactory(column -> new TableCell<Tarefa, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                        setStyle("");
+                    } else {
+                        setText(item);
+                        if (item.contains("Atrasada")) {
+                            setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+                        } else {
+                            setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                        }
+                    }
+                }
+            });
+
+            tabelaTarefas.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            System.out.println("✅ Tabela de tarefas configurada com sucesso!");
+
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao configurar tabela de tarefas: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    private void configurarTabela() {
+    // 🔥 NOVO MÉTODO: Carregar tarefas
+    private void carregarTarefas() {
+        try {
+            System.out.println("🔄 Carregando tarefas para a tabela...");
+            List<Tarefa> tarefas = tarefaDAO.listarTodos();
+            tarefasList = FXCollections.observableArrayList(tarefas);
+            tabelaTarefas.setItems(tarefasList);
+
+            if (lblTotalTarefas != null) {
+                lblTotalTarefas.setText("Total: " + tarefas.size() + " tarefas");
+            }
+
+            System.out.println("✅ " + tarefas.size() + " tarefas carregadas na tabela");
+
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao carregar tarefas: " + e.getMessage());
+            showAlert("Erro", "Erro ao carregar tarefas: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // 🔥 NOVOS MÉTODOS PARA TAREFAS - REMOVIDOS OS DUPLICADOS
+
+    @FXML
+    private void handleEditarTarefa() {
+        Tarefa tarefaSelecionada = tabelaTarefas.getSelectionModel().getSelectedItem();
+
+        if (tarefaSelecionada == null) {
+            showAlert("Aviso", "Selecione uma tarefa para editar.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/tarefa-form.fxml"));
+            Parent root = loader.load();
+
+            TarefaFormController controller = loader.getController();
+            controller.setTarefaParaEdicao(tarefaSelecionada);
+            controller.setDashboardController(this);
+
+            Stage stage = new Stage();
+            stage.setTitle("Editar Tarefa - " + tarefaSelecionada.getTitulo());
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tabelaTarefas.getScene().getWindow());
+            stage.showAndWait();
+
+            // Recarrega as tarefas após edição
+            carregarTarefas();
+            atualizarDashboard();
+
+        } catch (Exception e) {
+            showAlert("Erro", "Erro ao abrir formulário de edição: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleExcluirTarefa() {
+        Tarefa tarefaSelecionada = tabelaTarefas.getSelectionModel().getSelectedItem();
+
+        if (tarefaSelecionada == null) {
+            showAlert("Aviso", "Selecione uma tarefa para excluir.");
+            return;
+        }
+
+        Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacao.setTitle("Confirmar Exclusão");
+        confirmacao.setHeaderText("Excluir Tarefa");
+        confirmacao.setContentText("Tem certeza que deseja excluir a tarefa: " + tarefaSelecionada.getTitulo() + "?");
+
+        Optional<ButtonType> resultado = confirmacao.showAndWait();
+        if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
+            try {
+                boolean sucesso = tarefaDAO.excluir(tarefaSelecionada.getId());
+                if (sucesso) {
+                    showAlert("Sucesso", "Tarefa excluída com sucesso!");
+                    carregarTarefas();
+                    atualizarDashboard();
+                } else {
+                    showAlert("Erro", "Não foi possível excluir a tarefa.");
+                }
+            } catch (Exception e) {
+                showAlert("Erro", "Erro ao excluir tarefa: " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void handleConcluirTarefa() {
+        Tarefa tarefaSelecionada = tabelaTarefas.getSelectionModel().getSelectedItem();
+
+        if (tarefaSelecionada == null) {
+            showAlert("Aviso", "Selecione uma tarefa para concluir.");
+            return;
+        }
+
+        if ("Concluída".equals(tarefaSelecionada.getStatus())) {
+            showAlert("Info", "Esta tarefa já está concluída.");
+            return;
+        }
+
+        Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacao.setTitle("Confirmar Conclusão");
+        confirmacao.setHeaderText("Concluir Tarefa");
+        confirmacao.setContentText("Deseja marcar a tarefa '" + tarefaSelecionada.getTitulo() + "' como concluída?");
+
+        Optional<ButtonType> resultado = confirmacao.showAndWait();
+        if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
+            try {
+                tarefaSelecionada.setStatus("Concluída");
+                tarefaSelecionada.setDataFimReal(LocalDate.now());
+
+                boolean sucesso = tarefaDAO.salvar(tarefaSelecionada);
+                if (sucesso) {
+                    showAlert("Sucesso", "Tarefa concluída com sucesso!");
+                    carregarTarefas();
+                    atualizarDashboard();
+                } else {
+                    showAlert("Erro", "Não foi possível concluir a tarefa.");
+                }
+            } catch (Exception e) {
+                showAlert("Erro", "Erro ao concluir tarefa: " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void handleVerTarefasProjeto() {
+        Projeto projetoSelecionado = tabelaProjetos.getSelectionModel().getSelectedItem();
+
+        if (projetoSelecionado == null) {
+            showAlert("Aviso", "Selecione um projeto para ver suas tarefas.");
+            return;
+        }
+
+        try {
+            List<Tarefa> tarefasDoProjeto = tarefaDAO.listarPorProjeto(projetoSelecionado.getId());
+
+            StringBuilder mensagem = new StringBuilder();
+            mensagem.append("Tarefas do Projeto: ").append(projetoSelecionado.getNome()).append("\n\n");
+
+            for (Tarefa tarefa : tarefasDoProjeto) {
+                mensagem.append("• ").append(tarefa.getTitulo())
+                        .append(" (").append(tarefa.getStatus()).append(")\n");
+            }
+
+            if (tarefasDoProjeto.isEmpty()) {
+                mensagem.append("Nenhuma tarefa encontrada para este projeto.");
+            }
+
+            showAlert("Tarefas do Projeto", mensagem.toString());
+
+        } catch (Exception e) {
+            showAlert("Erro", "Erro ao carregar tarefas do projeto: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleRelatorioTarefas() {
+        try {
+            List<Tarefa> tarefas = tarefaDAO.listarTodos();
+
+            StringBuilder relatorio = new StringBuilder();
+            relatorio.append("RELATÓRIO DE TAREFAS\n");
+            relatorio.append("====================\n\n");
+
+            for (Tarefa tarefa : tarefas) {
+                relatorio.append("ID: ").append(tarefa.getId()).append("\n");
+                relatorio.append("Título: ").append(tarefa.getTitulo()).append("\n");
+                relatorio.append("Projeto: ").append(tarefa.getNomeProjeto()).append("\n");
+                relatorio.append("Responsável: ").append(tarefa.getNomeResponsavel()).append("\n");
+                relatorio.append("Status: ").append(tarefa.getStatus()).append("\n");
+                relatorio.append("Prioridade: ").append(tarefa.getPrioridade()).append("\n");
+                relatorio.append("Início Previsto: ").append(tarefa.getDataInicioPrevistaFormatada()).append("\n");
+                relatorio.append("Fim Previsto: ").append(tarefa.getDataFimPrevistaFormatada()).append("\n");
+                relatorio.append("Situação: ").append(tarefa.estaAtrasada() ? "Atrasada" : "No prazo").append("\n");
+                relatorio.append("-----------------------------\n");
+            }
+
+            relatorio.append("\nTotal de Tarefas: ").append(tarefas.size());
+
+            TextArea textArea = new TextArea(relatorio.toString());
+            textArea.setEditable(false);
+            textArea.setWrapText(true);
+
+            ScrollPane scrollPane = new ScrollPane(textArea);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setFitToHeight(true);
+
+            Stage stage = new Stage();
+            stage.setTitle("Relatório de Tarefas");
+            stage.setScene(new Scene(scrollPane, 700, 500));
+            stage.show();
+
+        } catch (Exception e) {
+            showAlert("Erro", "Erro ao gerar relatório de tarefas: " + e.getMessage());
+        }
+    }
+
+    private void configurarTabelaProjetos() {
         // Configuração das colunas básicas
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
@@ -81,14 +385,13 @@ public class DashboardController {
         // 🔥 CORREÇÃO: Use os métodos corretos da sua classe Projeto
         colResponsavel.setCellValueFactory(cellData -> {
             Projeto projeto = cellData.getValue();
-            return new javafx.beans.property.SimpleStringProperty(projeto.getNomeResponsavel());
+            return new SimpleStringProperty(projeto.getNomeResponsavel());
         });
 
         colEquipes.setCellValueFactory(cellData -> {
             Projeto projeto = cellData.getValue();
-            return new javafx.beans.property.SimpleStringProperty(projeto.getNomesEquipes());
+            return new SimpleStringProperty(projeto.getNomesEquipes());
         });
-
 
         // Formatação personalizada para status
         colStatus.setCellFactory(column -> new TableCell<Projeto, String>() {
@@ -142,6 +445,7 @@ public class DashboardController {
     private void atualizarDashboard() {
         try {
             List<Projeto> projetos = projetoDAO.listarTodos();
+            List<Tarefa> tarefas = tarefaDAO.listarTodos();
 
             // Calcular métricas
             long projetosAtivos = projetos.stream()
@@ -152,9 +456,16 @@ public class DashboardController {
                     .filter(Projeto::estaAtrasado)
                     .count();
 
-            // Aqui você pode adicionar lógica para tarefas pendentes e equipes ativas
-            // Por enquanto, vou usar valores placeholder
-            int tarefasPendentes = calcularTarefasPendentes(projetos);
+            // Calcular métricas de tarefas
+            long tarefasPendentes = tarefas.stream()
+                    .filter(t -> "Pendente".equals(t.getStatus()))
+                    .count();
+
+            long tarefasAtrasadas = tarefas.stream()
+                    .filter(Tarefa::estaAtrasada)
+                    .count();
+
+            // ✅ CORREÇÃO: Removi a variável duplicada e usei as existentes
             int equipesAtivas = calcularEquipesAtivas(projetos);
 
             // Atualizar os labels do dashboard
@@ -166,6 +477,9 @@ public class DashboardController {
             }
             if (lblTarefasPendentes != null) {
                 lblTarefasPendentes.setText(String.valueOf(tarefasPendentes));
+            }
+            if (lblTarefasAtrasadas != null) {
+                lblTarefasAtrasadas.setText(String.valueOf(tarefasAtrasadas));
             }
             if (lblEquipesAtivas != null) {
                 lblEquipesAtivas.setText(String.valueOf(equipesAtivas));
@@ -354,13 +668,13 @@ public class DashboardController {
                 relatorio.append("Nome: ").append(projeto.getNome()).append("\n");
                 relatorio.append("Status: ").append(projeto.getStatusDisplay()).append("\n");
 
-                //  CORREÇÃO
+                // CORREÇÃO
                 relatorio.append("Responsável: ").append(projeto.getNomeResponsavel()).append("\n");
 
                 relatorio.append("Data Início: ").append(projeto.getDataInicioFormatada()).append("\n");
                 relatorio.append("Data Fim: ").append(projeto.getDataFimFormatada()).append("\n");
 
-                //  CORREÇÃO
+                // CORREÇÃO
                 relatorio.append("Equipes: ").append(projeto.getNomesEquipes()).append("\n");
                 relatorio.append("Quantidade de Equipes: ").append(projeto.getQuantidadeEquipes()).append("\n");
                 relatorio.append("-----------------------------\n");
@@ -420,6 +734,41 @@ public class DashboardController {
 
         } catch (Exception e) {
             showAlert("Erro", "Não foi possível abrir o gerenciamento de equipes: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // ✅ CORREÇÃO: Mantive apenas uma versão de cada método
+    @FXML
+    private void handleGerenciarTarefas() {
+        // Já estamos na aba de tarefas, apenas recarrega os dados
+        carregarTarefas();
+        atualizarDashboard();
+        showAlert("Info", "Tarefas recarregadas com sucesso!");
+    }
+
+    @FXML
+    private void handleNovaTarefa() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/tarefa-form.fxml"));
+            Parent root = loader.load();
+
+            TarefaFormController controller = loader.getController();
+            controller.setDashboardController(this);
+
+            Stage stage = new Stage();
+            stage.setTitle("Nova Tarefa");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tabelaTarefas.getScene().getWindow());
+            stage.showAndWait();
+
+            // Recarrega as tarefas após fechar o formulário
+            carregarTarefas();
+            atualizarDashboard();
+
+        } catch (Exception e) {
+            showAlert("Erro", "Não foi possível abrir o formulário de tarefa: " + e.getMessage());
             e.printStackTrace();
         }
     }

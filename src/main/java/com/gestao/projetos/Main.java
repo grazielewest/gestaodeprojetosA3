@@ -2,6 +2,7 @@ package com.gestao.projetos;
 
 import com.gestao.projetos.dao.EquipeDAO;
 import com.gestao.projetos.dao.ProjetoDAO;
+import com.gestao.projetos.dao.TarefaDAO;
 import com.gestao.projetos.dao.UsuarioDAO;
 import database.DatabaseConnection;
 import javafx.application.Application;
@@ -69,7 +70,8 @@ public class Main extends Application {
             EquipeDAO equipeDAO = new EquipeDAO();
             equipeDAO.criarTabela();
             // Aqui você pode adicionar a inicialização de outras tabelas no futuro
-            // tarefaDAO.criarTabela();
+            TarefaDAO tarefaDAO = new TarefaDAO();
+            tarefaDAO.criarTabela();
 
             logger.log(Level.INFO, "✅ Tabelas do sistema inicializadas com sucesso");
             return true;
