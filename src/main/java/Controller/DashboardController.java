@@ -19,6 +19,8 @@ import javafx.collections.ObservableList;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import javafx.scene.control.TableCell;
 
 public class DashboardController {
@@ -444,64 +446,133 @@ public class DashboardController {
 
     private void atualizarDashboard() {
         try {
+            System.out.println("🔄 Atualizando dashboard...");
             List<Projeto> projetos = projetoDAO.listarTodos();
             List<Tarefa> tarefas = tarefaDAO.listarTodos();
+            System.out.println("📊 Projetos encontrados: " + projetos.size());
+            System.out.println("📊 Tarefas encontradas: " + tarefas.size());
 
-            // Calcular métricas
+            // Calcular métricas de projetos
             long projetosAtivos = projetos.stream()
-                    .filter(p -> "Em Andamento".equals(p.getStatus()))
+                    .filter(p -> p != null && "Em Andamento".equals(p.getStatus()))
                     .count();
 
             long projetosAtrasados = projetos.stream()
-                    .filter(Projeto::estaAtrasado)
+                    .filter(p -> p != null && p.estaAtrasado())
                     .count();
 
             // Calcular métricas de tarefas
             long tarefasPendentes = tarefas.stream()
-                    .filter(t -> "Pendente".equals(t.getStatus()))
+                    .filter(t -> t != null && "Pendente".equals(t.getStatus()))
                     .count();
 
             long tarefasAtrasadas = tarefas.stream()
-                    .filter(Tarefa::estaAtrasada)
+                    .filter(t -> t != null && t.estaAtrasada())
                     .count();
 
-            // ✅ CORREÇÃO: Removi a variável duplicada e usei as existentes
             int equipesAtivas = calcularEquipesAtivas(projetos);
 
-            // Atualizar os labels do dashboard
-            if (lblProjetosAtivos != null) {
-                lblProjetosAtivos.setText(String.valueOf(projetosAtivos));
+            System.out.println("📈 Métricas calculadas:");
+            System.out.println("   Projetos Ativos: " + projetosAtivos);
+            System.out.println("   Projetos Atrasados: " + projetosAtrasados);
+            System.out.println("   Tarefas Pendentes: " + tarefasPendentes);
+            System.out.println("   Tarefas Atrasadas: " + tarefasAtrasadas);
+            System.out.println("   Equipes Ativas: " + equipesAtivas);
+
+            // Atualizar os labels do dashboard - com verificação de null
+            atualizarLabel(lblProjetosAtivos, projetosAtivos);
+            atualizarLabel(lblProjetosAtrasados, projetosAtrasados);
+            atualizarLabel(lblTarefasPendentes, tarefasPendentes);
+            atualizarLabel(lblTarefasAtrasadas, tarefasAtrasadas);
+            atualizarLabel(lblEquipesAtivas, equipesAtivas);
+
+            // Atualizar total de projetos
+            if (lblTotalProjetos != null) {
+                lblTotalProjetos.setText("Total: " + projetos.size() + " projetos");
             }
-            if (lblProjetosAtrasados != null) {
-                lblProjetosAtrasados.setText(String.valueOf(projetosAtrasados));
+
+            // Atualizar total de tarefas
+            if (lblTotalTarefas != null) {
+                lblTotalTarefas.setText("Total: " + tarefas.size() + " tarefas");
             }
-            if (lblTarefasPendentes != null) {
-                lblTarefasPendentes.setText(String.valueOf(tarefasPendentes));
-            }
-            if (lblTarefasAtrasadas != null) {
-                lblTarefasAtrasadas.setText(String.valueOf(tarefasAtrasadas));
-            }
-            if (lblEquipesAtivas != null) {
-                lblEquipesAtivas.setText(String.valueOf(equipesAtivas));
-            }
+
+            System.out.println("✅ Dashboard atualizado com sucesso!");
 
         } catch (Exception e) {
             System.out.println("❌ Erro ao atualizar dashboard: " + e.getMessage());
+            e.printStackTrace();
+
+            // Definir valores padrão em caso de erro
+            definirValoresPadraoDashboard();
         }
     }
 
+    // Método auxiliar para atualizar labels com segurança
+    private void atualizarLabel(Label label, long valor) {
+        if (label != null) {
+            label.setText(String.valueOf(valor));
+        }
+    }
+
+    private void atualizarLabel(Label label, int valor) {
+        if (label != null) {
+            label.setText(String.valueOf(valor));
+        }
+    }
+
+    // Método para definir valores padrão em caso de erro
+    private void definirValoresPadraoDashboard() {
+        if (lblProjetosAtivos != null) lblProjetosAtivos.setText("0");
+        if (lblProjetosAtrasados != null) lblProjetosAtrasados.setText("0");
+        if (lblTarefasPendentes != null) lblTarefasPendentes.setText("0");
+        if (lblTarefasAtrasadas != null) lblTarefasAtrasadas.setText("0");
+        if (lblEquipesAtivas != null) lblEquipesAtivas.setText("0");
+        if (lblTotalProjetos != null) lblTotalProjetos.setText("Total: 0 projetos");
+        if (lblTotalTarefas != null) lblTotalTarefas.setText("Total: 0 tarefas");
+    }
+
     private int calcularTarefasPendentes(List<Projeto> projetos) {
-        // Placeholder - implemente sua lógica real aqui
-        return projetos.stream()
-                .mapToInt(p -> 5) // Exemplo: cada projeto tem 5 tarefas pendentes
-                .sum();
+        try {
+            if (projetos == null || projetos.isEmpty()) {
+                return 0;
+            }
+
+            // Se você já carregou todas as tarefas no dashboard
+            if (tarefasList == null) {
+                carregarTarefas(); // Garante que as tarefas estão carregadas
+            }
+
+            List<Integer> idsProjetos = projetos.stream()
+                    .filter(p -> p != null)
+                    .map(Projeto::getId)
+                    .collect(Collectors.toList());
+
+            long totalTarefasPendentes = tarefasList.stream()
+                    .filter(t -> t != null &&
+                            idsProjetos.contains(t.getIdProjeto()) &&
+                            "Pendente".equals(t.getStatus()))
+                    .count();
+
+            return (int) totalTarefasPendentes;
+
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao calcular tarefas pendentes: " + e.getMessage());
+            return 0;
+        }
     }
 
     private int calcularEquipesAtivas(List<Projeto> projetos) {
-        // Placeholder - implemente sua lógica real aqui
-        return (int) projetos.stream()
-                .filter(p -> p.getEquipes() != null && !p.getEquipes().isEmpty())
-                .count();
+        try {
+            if (projetos == null) return 0;
+
+            // Contar projetos que têm equipes associadas
+            return (int) projetos.stream()
+                    .filter(p -> p != null && p.getEquipes() != null && !p.getEquipes().isEmpty())
+                    .count();
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao calcular equipes ativas: " + e.getMessage());
+            return 0;
+        }
     }
 
     private void configurarLabels() {
