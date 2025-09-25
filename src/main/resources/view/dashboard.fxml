@@ -71,7 +71,6 @@
                                 <Label text="Projetos Ativos" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
                                 <Label fx:id="lblProjetosAtivos" text="0"
                                        style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
-                                <Label text="Carregando..." style="-fx-text-fill: #ecf0f1; -fx-font-size: 12px;"/>
                             </VBox>
 
                             <!-- Cartão 2 - Tarefas Pendentes -->
@@ -81,7 +80,6 @@
                                 <Label text="Tarefas Pendentes" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
                                 <Label fx:id="lblTarefasPendentes" text="0"
                                        style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
-                                <Label text="Carregando..." style="-fx-text-fill: #ecf0f1; -fx-font-size: 12px;"/>
                             </VBox>
 
                             <!-- Cartão 3 - Projetos Atrasados -->
@@ -91,7 +89,6 @@
                                 <Label text="Projetos Atrasados" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
                                 <Label fx:id="lblProjetosAtrasados" text="0"
                                        style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
-                                <Label text="Carregando..." style="-fx-text-fill: #ecf0f1; -fx-font-size: 12px;"/>
                             </VBox>
 
                             <!-- Cartão 4 - Tarefas Atrasadas -->
@@ -111,7 +108,6 @@
                                 <Label text="Equipes Ativas" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
                                 <Label fx:id="lblEquipesAtivas" text="0"
                                        style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
-                                <Label text="Carregando..." style="-fx-text-fill: #ecf0f1; -fx-font-size: 12px;"/>
                             </VBox>
                         </GridPane>
 
