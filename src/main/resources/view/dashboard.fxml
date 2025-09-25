@@ -151,8 +151,8 @@
                             <TableColumn fx:id="colStatus" text="Status" prefWidth="120"/>
                             <TableColumn fx:id="colDataInicio" text="Data Início" prefWidth="110"/>
                             <TableColumn fx:id="colDataFim" text="Data Fim" prefWidth="110"/>
-                            <TableColumn fx:id="colResponsável" text="Responsável" prefWidth="100"/>
-                            <TableColumn fx:id="colEquipes" text="Equipes" prefWidth="100"/>
+                            <TableColumn fx:id="colResponsavel" text="Responsável" prefWidth="150"/>
+                            <TableColumn fx:id="colEquipes" text="Equipes" prefWidth="200"/>
                         </columns>
                     </TableView>
                 </VBox>
