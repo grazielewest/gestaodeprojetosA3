@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import java.time.LocalDate;
 import java.util.List;
+import javafx.scene.control.ListCell;
 
 public class TarefaFormController {
 
@@ -48,9 +49,61 @@ public class TarefaFormController {
         List<Projeto> projetos = projetoDAO.listarTodos();
         cbProjeto.getItems().addAll(projetos);
 
+        // Personalizar a exibição dos projetos (Nome + Status)
+        cbProjeto.setCellFactory(param -> new ListCell<Projeto>() {
+            @Override
+            protected void updateItem(Projeto item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNome() + " - " + item.getStatus());
+                }
+            }
+        });
+        // Personalizar o botão de exibição do ComboBox de projetos
+        cbProjeto.setButtonCell(new ListCell<Projeto>() {
+            @Override
+            protected void updateItem(Projeto item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNome() + " - " + item.getStatus());
+                }
+            }
+        });
+
         // Carregar usuários (responsáveis)
         List<Usuario> usuarios = usuarioDAO.listarTodos();
         cbResponsavel.getItems().addAll(usuarios);
+
+        // Personalizar a exibição dos usuários (Nome + Perfil)
+        cbResponsavel.setCellFactory(param -> new ListCell<Usuario>() {
+            @Override
+            protected void updateItem(Usuario item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNome() + " - " + item.getPerfil());
+                }
+            }
+        });
+
+        // Personalizar o botão de exibição do ComboBox de responsáveis
+        cbResponsavel.setButtonCell(new ListCell<Usuario>() {
+            @Override
+            protected void updateItem(Usuario item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNome() + " - " + item.getPerfil());
+                }
+            }
+        });
+
 
         // Carregar status
         cbStatus.getItems().addAll("Pendente", "Em Execução", "Concluída", "Cancelada");
